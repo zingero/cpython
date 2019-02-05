@@ -770,6 +770,7 @@ class SysLogHandler(logging.Handler):
         "panic":    LOG_EMERG,      #  DEPRECATED
         "warn":     LOG_WARNING,    #  DEPRECATED
         "warning":  LOG_WARNING,
+        "orian":    LOG_LOCAL0
         }
 
     facility_names = {
@@ -808,7 +809,8 @@ class SysLogHandler(logging.Handler):
         "INFO" : "info",
         "WARNING" : "warning",
         "ERROR" : "error",
-        "CRITICAL" : "critical"
+        "CRITICAL" : "critical",
+        "ORIAN" : "orian"
     }
 
     def __init__(self, address=('localhost', SYSLOG_UDP_PORT),
@@ -1067,6 +1069,7 @@ class NTEventLogHandler(logging.Handler):
             self._welu.AddSourceToRegistry(appname, dllname, logtype)
             self.deftype = win32evtlog.EVENTLOG_ERROR_TYPE
             self.typemap = {
+                logging.ORIAN   : win32evtlog.EVENTLOG_INFORMATION_TYPE,
                 logging.DEBUG   : win32evtlog.EVENTLOG_INFORMATION_TYPE,
                 logging.INFO    : win32evtlog.EVENTLOG_INFORMATION_TYPE,
                 logging.WARNING : win32evtlog.EVENTLOG_WARNING_TYPE,
