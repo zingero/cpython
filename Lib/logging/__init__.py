@@ -39,7 +39,7 @@ __all__ = ['BASIC_FORMAT', 'BufferingFormatter', 'CRITICAL', 'DEBUG', 'ERROR',
            'info', 'log', 'makeLogRecord', 'setLoggerClass', 'shutdown',
            'warn', 'warning', 'getLogRecordFactory', 'setLogRecordFactory',
            'lastResort', 'raiseExceptions', 'getLevelNamesMapping',
-           'getHandlerByName', 'getHandlerNames']
+           'getHandlerByName', 'getHandlerNames', 'ORIAN', 'orian']
 
 import threading
 
@@ -102,6 +102,7 @@ WARNING = 30
 WARN = WARNING
 INFO = 20
 DEBUG = 10
+ORIAN = 5
 NOTSET = 0
 
 _levelToName = {
@@ -110,6 +111,7 @@ _levelToName = {
     WARNING: 'WARNING',
     INFO: 'INFO',
     DEBUG: 'DEBUG',
+    ORIAN: 'ORIAN',
     NOTSET: 'NOTSET',
 }
 _nameToLevel = {
@@ -120,6 +122,7 @@ _nameToLevel = {
     'WARNING': WARNING,
     'INFO': INFO,
     'DEBUG': DEBUG,
+    'ORIAN': ORIAN,
     'NOTSET': NOTSET,
 }
 
@@ -1494,6 +1497,18 @@ class Logger(Filterer):
         self.level = _checkLevel(level)
         self.manager._clear_cache()
 
+    def orian(self, msg, *args, **kwargs):
+        """
+        Log 'msg % args' with severity 'ORIAN'.
+
+        To pass exception information, use the keyword argument exc_info with
+        a true value, e.g.
+
+        logger.orian("Houston, we have a %s", "problematic problem", exc_info=1)
+        """
+        if self.isEnabledFor(ORIAN):
+            self._log(ORIAN, msg, args, **kwargs)
+
     def debug(self, msg, *args, **kwargs):
         """
         Log 'msg % args' with severity 'DEBUG'.
@@ -1893,6 +1908,12 @@ class LoggerAdapter(object):
     #
     # Boilerplate convenience methods
     #
+    def orian(self, msg, *args, **kwargs):
+        """
+        Delegate an orian call to the underlying logger.
+        """
+        self.log(ORIAN, msg, *args, **kwargs)
+
     def debug(self, msg, *args, **kwargs):
         """
         Delegate a debug call to the underlying logger.
@@ -2203,6 +2224,16 @@ def debug(msg, *args, **kwargs):
     if len(root.handlers) == 0:
         basicConfig()
     root.debug(msg, *args, **kwargs)
+
+def orian(msg, *args, **kwargs):
+    """
+    Log a message with severity 'ORIAN' on the root logger. If the logger has
+    no handlers, call basicConfig() to add a console handler with a pre-defined
+    format.
+    """
+    if len(root.handlers) == 0:
+        basicConfig()
+    root.orian(msg, *args, **kwargs)
 
 def log(level, msg, *args, **kwargs):
     """
