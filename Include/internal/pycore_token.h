@@ -68,17 +68,19 @@ extern "C" {
 #define ELLIPSIS        52
 #define COLONEQUAL      53
 #define EXCLAMATION     54
-#define OP              55
-#define TYPE_IGNORE     56
-#define TYPE_COMMENT    57
-#define SOFT_KEYWORD    58
-#define FSTRING_START   59
-#define FSTRING_MIDDLE  60
-#define FSTRING_END     61
-#define COMMENT         62
-#define NL              63
-#define ERRORTOKEN      64
-#define N_TOKENS        66
+#define PLUSPLUS        55
+#define MINUSMINUS      56
+#define OP              57
+#define TYPE_IGNORE     58
+#define TYPE_COMMENT    59
+#define SOFT_KEYWORD    60
+#define FSTRING_START   61
+#define FSTRING_MIDDLE  62
+#define FSTRING_END     63
+#define COMMENT         64
+#define NL              65
+#define ERRORTOKEN      66
+#define N_TOKENS        68
 #define NT_OFFSET       256
 
 /* Special definitions for cooperation with parser */
@@ -97,7 +99,7 @@ extern "C" {
 // Export these 4 symbols for 'test_peg_generator'
 PyAPI_DATA(const char * const) _PyParser_TokenNames[]; /* Token names */
 PyAPI_FUNC(int) _PyToken_OneChar(int);
-PyAPI_FUNC(int) _PyToken_TwoChars(int, int);
+PyAPI_FUNC(int) _PyToken_TwoChars(int, int, int);
 PyAPI_FUNC(int) _PyToken_ThreeChars(int, int, int);
 
 #ifdef __cplusplus

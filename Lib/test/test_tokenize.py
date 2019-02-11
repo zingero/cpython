@@ -1274,7 +1274,7 @@ class TestMisc(TestCase):
     def test___all__(self):
         expected = token.__all__ + [
             "TokenInfo", "TokenError", "generate_tokens",
-            "detect_encoding", "untokenize", "open", "tokenize",
+            "detect_encoding", "untokenize", "open", "tokenize"
         ]
         self.assertCountEqual(tokenize.__all__, expected)
 
@@ -1693,6 +1693,8 @@ class TestTokenize(TestCase):
         self.assertExactTypeEqual('>>', token.RIGHTSHIFT)
         self.assertExactTypeEqual('**', token.DOUBLESTAR)
         self.assertExactTypeEqual('+=', token.PLUSEQUAL)
+        self.assertExactTypeEqual('x++', tokenize.NAME, token.PLUSPLUS)
+        self.assertExactTypeEqual('x--', tokenize.NAME, token.MINUSMINUS)
         self.assertExactTypeEqual('-=', token.MINEQUAL)
         self.assertExactTypeEqual('*=', token.STAREQUAL)
         self.assertExactTypeEqual('/=', token.SLASHEQUAL)

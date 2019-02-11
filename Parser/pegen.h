@@ -113,6 +113,10 @@ typedef struct {
 
 typedef struct { operator_ty kind; } AugOperator;
 typedef struct {
+    operator_ty kind;
+} IncDecOperator;
+
+typedef struct {
     void *element;
     int is_keyword;
 } KeywordOrStarred;
@@ -321,6 +325,7 @@ arguments_ty _PyPegen_empty_arguments(Parser *);
 expr_ty _PyPegen_formatted_value(Parser *, expr_ty, Token *, ResultTokenWithMetadata *, ResultTokenWithMetadata *, Token *,
                                  int, int, int, int, PyArena *);
 AugOperator *_PyPegen_augoperator(Parser*, operator_ty type);
+IncDecOperator *_PyPegen_incdecoperator(Parser*, operator_ty type);
 stmt_ty _PyPegen_function_def_decorators(Parser *, asdl_expr_seq *, stmt_ty);
 stmt_ty _PyPegen_class_def_decorators(Parser *, asdl_expr_seq *, stmt_ty);
 KeywordOrStarred *_PyPegen_keyword_or_starred(Parser *, void *, int);

@@ -6,6 +6,9 @@
 #define MAXINDENT 100       /* Max indentation level */
 #define MAXLEVEL 200        /* Max parentheses level */
 #define MAXFSTRINGLEVEL 150 /* Max f-string nesting level */
+#define HORIZONTAL_TAB 9    /* ASCII value for horizontal tab: '\t' */
+#define NEWLINE_IN_ASCII 10 /* ASCII value for newline: '\n' */
+#define WHITESPACE 32       /* ASCII value for whitespace: ' ' */
 
 #define INSIDE_FSTRING(tok) (tok->tok_mode_stack_index > 0)
 #define INSIDE_FSTRING_EXPR(tok) (tok->curly_bracket_expr_start_depth >= 0)

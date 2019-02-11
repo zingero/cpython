@@ -12607,7 +12607,7 @@ Notes:
 
 All unary arithmetic and bitwise operations have the same priority:
 
-   u_expr ::= power | "-" u_expr | "+" u_expr | "~" u_expr
+   u_expr ::= power | "-" u_expr | "+" u_expr | "~" u_expr | u_expr "++" | u_expr "--"
 
 The unary "-" (minus) operator yields the negation of its numeric
 argument; the operation can be overridden with the "__neg__()" special
@@ -12621,7 +12621,10 @@ integer argument.  The bitwise inversion of "x" is defined as
 "-(x+1)".  It only applies to integral numbers or to custom objects
 that override the "__invert__()" special method.
 
-In all three cases, if the argument does not have the proper type, a
+The unary "++" (plus plus) operator increment its numeric argument
+The unary "--" (minus minus) operator decrement its numeric argument
+
+In all five cases, if the argument does not have the proper type, a
 "TypeError" exception is raised.
 ''',
     'while': r'''The "while" statement

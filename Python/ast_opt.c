@@ -943,6 +943,9 @@ astfold_stmt(stmt_ty node_, PyArena *ctx_, _PyASTOptimizeState *state)
         CALL(astfold_expr, expr_ty, node_->v.AugAssign.target);
         CALL(astfold_expr, expr_ty, node_->v.AugAssign.value);
         break;
+    case IncDecAssign_kind:
+        CALL(astfold_expr, expr_ty, node_->v.IncDecAssign.target);
+        break;
     case AnnAssign_kind:
         CALL(astfold_expr, expr_ty, node_->v.AnnAssign.target);
         if (!(state->ff_features & CO_FUTURE_ANNOTATIONS)) {

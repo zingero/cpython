@@ -22,6 +22,8 @@ typedef enum _expr_context { Load=1, Store=2, Del=3 } expr_context_ty;
 
 typedef enum _boolop { And=1, Or=2 } boolop_ty;
 
+typedef enum _inc_dec_operator { Inc=1, Dec=2 } inc_dec_operator_ty;
+
 typedef enum _operator { Add=1, Sub=2, Mult=3, MatMult=4, Div=5, Mod=6, Pow=7,
                          LShift=8, RShift=9, BitOr=10, BitXor=11, BitAnd=12,
                          FloorDiv=13 } operator_ty;
@@ -186,13 +188,13 @@ struct _mod {
 
 enum _stmt_kind {FunctionDef_kind=1, AsyncFunctionDef_kind=2, ClassDef_kind=3,
                   Return_kind=4, Delete_kind=5, Assign_kind=6,
-                  TypeAlias_kind=7, AugAssign_kind=8, AnnAssign_kind=9,
-                  For_kind=10, AsyncFor_kind=11, While_kind=12, If_kind=13,
-                  With_kind=14, AsyncWith_kind=15, Match_kind=16,
-                  Raise_kind=17, Try_kind=18, TryStar_kind=19, Assert_kind=20,
-                  Import_kind=21, ImportFrom_kind=22, Global_kind=23,
-                  Nonlocal_kind=24, Expr_kind=25, Pass_kind=26, Break_kind=27,
-                  Continue_kind=28};
+                  TypeAlias_kind=7, IncDecAssign_kind=8, AugAssign_kind=9,
+                  AnnAssign_kind=10, For_kind=11, AsyncFor_kind=12,
+                  While_kind=13, If_kind=14, With_kind=15, AsyncWith_kind=16,
+                  Match_kind=17, Raise_kind=18, Try_kind=19, TryStar_kind=20,
+                  Assert_kind=21, Import_kind=22, ImportFrom_kind=23,
+                  Global_kind=24, Nonlocal_kind=25, Expr_kind=26, Pass_kind=27,
+                  Break_kind=28, Continue_kind=29};
 struct _stmt {
     enum _stmt_kind kind;
     union {
@@ -244,6 +246,11 @@ struct _stmt {
             asdl_type_param_seq *type_params;
             expr_ty value;
         } TypeAlias;
+
+        struct {
+            expr_ty target;
+            inc_dec_operator_ty op;
+        } IncDecAssign;
 
         struct {
             expr_ty target;
@@ -711,6 +718,9 @@ stmt_ty _PyAST_Assign(asdl_expr_seq * targets, expr_ty value, string
 stmt_ty _PyAST_TypeAlias(expr_ty name, asdl_type_param_seq * type_params,
                          expr_ty value, int lineno, int col_offset, int
                          end_lineno, int end_col_offset, PyArena *arena);
+stmt_ty _PyAST_IncDecAssign(expr_ty target, inc_dec_operator_ty op, int lineno,
+                            int col_offset, int end_lineno, int end_col_offset,
+                            PyArena *arena);
 stmt_ty _PyAST_AugAssign(expr_ty target, operator_ty op, expr_ty value, int
                          lineno, int col_offset, int end_lineno, int
                          end_col_offset, PyArena *arena);

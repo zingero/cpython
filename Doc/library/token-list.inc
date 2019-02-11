@@ -205,6 +205,14 @@
 
    Token value for ``"!"``.
 
+.. data:: PLUSPLUS
+
+   Token value for ``"++"``.
+
+.. data:: MINUSMINUS
+
+   Token value for ``"--"``.
+
 .. data:: OP
 
 .. data:: TYPE_IGNORE

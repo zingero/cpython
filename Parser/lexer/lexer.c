@@ -46,6 +46,9 @@ static inline tokenizer_mode* TOK_NEXT_MODE(struct tok_state* tok) {
    tokenizing. */
 static const char* type_comment_prefix = "# type: ";
 
+/* Used for preventing the tokenizer create ++ or -- token for ++x, 5--x and more. */
+int isLastTokenVariable = 0;
+
 static inline int
 contains_null_bytes(const char* str, size_t size)
 {
@@ -1155,15 +1158,36 @@ tok_get_normal_mode(struct tok_state *tok, tokenizer_mode* current_tok, struct t
     /* Check for two-character token */
     {
         int c2 = tok_nextc(tok);
-        int current_token = _PyToken_TwoChars(c, c2);
+        int current_token = _PyToken_TwoChars(c, c2, isLastTokenVariable);
         if (current_token != OP) {
             int c3 = tok_nextc(tok);
+            int justLooksLikePlusPlusOrMinusMinus = 1;
+            if (current_token == PLUSPLUS || current_token == MINUSMINUS) {
+                int spaces_and_tabs_found = 0;
+                int next_token = c3;
+                /* Remove next whitespaces and horizontal tabs */
+                while (next_token == WHITESPACE || next_token == HORIZONTAL_TAB) {
+                    ++spaces_and_tabs_found;
+                    next_token = tok_nextc(tok);
+                }
+                /* Ignore situations like '1++1', 'x--1', etc. */
+                if (next_token != NEWLINE_IN_ASCII) {
+                    current_token = _PyToken_OneChar(c);
+                    justLooksLikePlusPlusOrMinusMinus = 0;
+                }
+                /* 'Insert' the removed whitespaces and horizontal tabs */
+                tok->cur -= spaces_and_tabs_found;
+            }
+
             int current_token3 = _PyToken_ThreeChars(c, c2, c3);
             if (current_token3 != OP) {
                 current_token = current_token3;
             }
             else {
                 tok_backup(tok, c3);
+                if (justLooksLikePlusPlusOrMinusMinus == 0) {
+                    tok_backup(tok, c2);
+                }
             }
             p_start = tok->start;
             p_end = tok->cur;
@@ -1487,6 +1511,7 @@ int
 _PyTokenizer_Get(struct tok_state *tok, struct token *token)
 {
     int result = tok_get(tok, token);
+    isLastTokenVariable = result == NAME;
     if (tok->decoding_erred) {
         result = ERRORTOKEN;
         tok->done = E_DECODE;

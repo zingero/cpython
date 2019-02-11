@@ -29,6 +29,8 @@ simple statements is:
               : | `global_stmt`
               : | `nonlocal_stmt`
               : | `type_stmt`
+              : | `incr_stmt`
+              : | `decr_stmt`
 
 
 .. _exprstmts:
