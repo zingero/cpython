@@ -3,6 +3,8 @@
 #include "Python.h"
 #include "pycore_token.h"
 
+#define DEFAULT_TOKEN OP
+
 /* Token names */
 
 const char * const _PyParser_TokenNames[] = {
@@ -61,6 +63,8 @@ const char * const _PyParser_TokenNames[] = {
     "ELLIPSIS",
     "COLONEQUAL",
     "EXCLAMATION",
+    "PLUSPLUS",
+    "MINUSMINUS",
     "OP",
     "TYPE_IGNORE",
     "TYPE_COMMENT",
@@ -109,11 +113,11 @@ _PyToken_OneChar(int c1)
     case '}': return RBRACE;
     case '~': return TILDE;
     }
-    return OP;
+    return DEFAULT_TOKEN;
 }
 
 int
-_PyToken_TwoChars(int c1, int c2)
+_PyToken_TwoChars(int c1, int c2, int isLastTokenVariable)
 {
     switch (c1) {
     case '!':
@@ -139,11 +143,13 @@ _PyToken_TwoChars(int c1, int c2)
         break;
     case '+':
         switch (c2) {
+        case '+': return isLastTokenVariable? PLUSPLUS : DEFAULT_TOKEN;
         case '=': return PLUSEQUAL;
         }
         break;
     case '-':
         switch (c2) {
+        case '-': return isLastTokenVariable? MINUSMINUS : DEFAULT_TOKEN;
         case '=': return MINEQUAL;
         case '>': return RARROW;
         }
@@ -193,7 +199,7 @@ _PyToken_TwoChars(int c1, int c2)
         }
         break;
     }
-    return OP;
+    return DEFAULT_TOKEN;
 }
 
 int
@@ -246,5 +252,5 @@ _PyToken_ThreeChars(int c1, int c2, int c3)
         }
         break;
     }
-    return OP;
+    return DEFAULT_TOKEN;
 }
