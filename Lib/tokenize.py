@@ -38,9 +38,11 @@ from token import EXACT_TOKEN_TYPES
 cookie_re = re.compile(r'^[ \t\f]*#.*?coding[:=][ \t]*([-\w.]+)', re.ASCII)
 blank_re = re.compile(br'^[ \t\f]*(?:[#\r\n]|$)', re.ASCII)
 
+isLastTokenVariable = False
+
 import token
 __all__ = token.__all__ + ["tokenize", "generate_tokens", "detect_encoding",
-                           "untokenize", "TokenInfo"]
+                           "untokenize", "TokenInfo", "isLastTokenVariable"]
 del token
 
 class TokenInfo(collections.namedtuple('TokenInfo', 'type string start end line')):
@@ -439,7 +441,7 @@ def _tokenize(readline, encoding):
         if encoding == "utf-8-sig":
             # BOM will already have been stripped.
             encoding = "utf-8"
-        yield TokenInfo(ENCODING, encoding, (0, 0), (0, 0), '')
+        yield create_token(ENCODING, encoding, (0, 0), (0, 0), '')
     last_line = b''
     line = b''
     while True:                                # loop over lines in stream
@@ -464,12 +466,12 @@ def _tokenize(readline, encoding):
             endmatch = endprog.match(line)
             if endmatch:
                 pos = end = endmatch.end(0)
-                yield TokenInfo(STRING, contstr + line[:end],
+                yield create_token(STRING, contstr + line[:end],
                        strstart, (lnum, end), contline + line)
                 contstr, needcont = '', 0
                 contline = None
             elif needcont and line[-2:] != '\\\n' and line[-3:] != '\\\r\n':
-                yield TokenInfo(ERRORTOKEN, contstr + line,
+                yield create_token(ERRORTOKEN, contstr + line,
                            strstart, (lnum, len(line)), contline)
                 contstr = ''
                 contline = None
@@ -498,17 +500,17 @@ def _tokenize(readline, encoding):
             if line[pos] in '#\r\n':           # skip comments or blank lines
                 if line[pos] == '#':
                     comment_token = line[pos:].rstrip('\r\n')
-                    yield TokenInfo(COMMENT, comment_token,
+                    yield create_token(COMMENT, comment_token,
                            (lnum, pos), (lnum, pos + len(comment_token)), line)
                     pos += len(comment_token)
 
-                yield TokenInfo(NL, line[pos:],
+                yield create_token(NL, line[pos:],
                            (lnum, pos), (lnum, len(line)), line)
                 continue
 
             if column > indents[-1]:           # count indents or dedents
                 indents.append(column)
-                yield TokenInfo(INDENT, line[:pos], (lnum, 0), (lnum, pos), line)
+                yield create_token(INDENT, line[:pos], (lnum, 0), (lnum, pos), line)
             while column < indents[-1]:
                 if column not in indents:
                     raise IndentationError(
@@ -516,7 +518,7 @@ def _tokenize(readline, encoding):
                         ("<tokenize>", lnum, pos, line))
                 indents = indents[:-1]
 
-                yield TokenInfo(DEDENT, '', (lnum, pos), (lnum, pos), line)
+                yield create_token(DEDENT, '', (lnum, pos), (lnum, pos), line)
 
         else:                                  # continued statement
             if not line:
@@ -527,23 +529,28 @@ def _tokenize(readline, encoding):
             pseudomatch = _compile(PseudoToken).match(line, pos)
             if pseudomatch:                                # scan for tokens
                 start, end = pseudomatch.span(1)
-                spos, epos, pos = (lnum, start), (lnum, end), end
+                pos = end
                 if start == end:
                     continue
+                if not isLastTokenVariable and line[start:end].strip() in ["++", "--"]:
+                    end -= 1
+                    pos -= 1
+
+                spos, epos = (lnum, start), (lnum, end)
                 token, initial = line[start:end], line[start]
 
                 if (initial in numchars or                 # ordinary number
                     (initial == '.' and token != '.' and token != '...')):
-                    yield TokenInfo(NUMBER, token, spos, epos, line)
+                    yield create_token(NUMBER, token, spos, epos, line)
                 elif initial in '\r\n':
                     if parenlev > 0:
-                        yield TokenInfo(NL, token, spos, epos, line)
+                        yield create_token(NL, token, spos, epos, line)
                     else:
-                        yield TokenInfo(NEWLINE, token, spos, epos, line)
+                        yield create_token(NEWLINE, token, spos, epos, line)
 
                 elif initial == '#':
                     assert not token.endswith("\n")
-                    yield TokenInfo(COMMENT, token, spos, epos, line)
+                    yield create_token(COMMENT, token, spos, epos, line)
 
                 elif token in triple_quoted:
                     endprog = _compile(endpats[token])
@@ -551,7 +558,7 @@ def _tokenize(readline, encoding):
                     if endmatch:                           # all on one line
                         pos = endmatch.end(0)
                         token = line[start:pos]
-                        yield TokenInfo(STRING, token, spos, (lnum, pos), line)
+                        yield create_token(STRING, token, spos, (lnum, pos), line)
                     else:
                         strstart = (lnum, start)           # multiple lines
                         contstr = line[start:]
@@ -586,10 +593,10 @@ def _tokenize(readline, encoding):
                         contline = line
                         break
                     else:                                  # ordinary string
-                        yield TokenInfo(STRING, token, spos, epos, line)
+                        yield create_token(STRING, token, spos, epos, line)
 
                 elif initial.isidentifier():               # ordinary name
-                    yield TokenInfo(NAME, token, spos, epos, line)
+                    yield create_token(NAME, token, spos, epos, line)
                 elif initial == '\\':                      # continued stmt
                     continued = 1
                 else:
@@ -597,18 +604,23 @@ def _tokenize(readline, encoding):
                         parenlev += 1
                     elif initial in ')]}':
                         parenlev -= 1
-                    yield TokenInfo(OP, token, spos, epos, line)
+                    yield create_token(OP, token, spos, epos, line)
             else:
-                yield TokenInfo(ERRORTOKEN, line[pos],
+                yield create_token(ERRORTOKEN, line[pos],
                            (lnum, pos), (lnum, pos+1), line)
                 pos += 1
 
     # Add an implicit NEWLINE if the input doesn't end in one
     if last_line and last_line[-1] not in '\r\n':
-        yield TokenInfo(NEWLINE, '', (lnum - 1, len(last_line)), (lnum - 1, len(last_line) + 1), '')
+        yield create_token(NEWLINE, '', (lnum - 1, len(last_line)), (lnum - 1, len(last_line) + 1), '')
     for indent in indents[1:]:                 # pop remaining indent levels
-        yield TokenInfo(DEDENT, '', (lnum, 0), (lnum, 0), '')
-    yield TokenInfo(ENDMARKER, '', (lnum, 0), (lnum, 0), '')
+        yield create_token(DEDENT, '', (lnum, 0), (lnum, 0), '')
+    yield create_token(ENDMARKER, '', (lnum, 0), (lnum, 0), '')
+
+
+def create_token(type, string, start, end, line):
+    _isLastTokenVariable = type == NAME
+    return TokenInfo(type, string, start, end, line)
 
 
 def generate_tokens(readline):

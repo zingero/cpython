@@ -45,6 +45,9 @@ static void tok_backup(struct tok_state *tok, int c);
    tokenizing. */
 static const char* type_comment_prefix = "# type: ";
 
+/* Used for preventing the tokenizer create ++ or -- token for ++x, 5--x and more. */
+int isLastTokenVariable = 0;
+
 /* Create and initialize a new tok_state structure */
 
 static struct tok_state *
@@ -1805,9 +1808,24 @@ tok_get(struct tok_state *tok, const char **p_start, const char **p_end)
     /* Check for two-character token */
     {
         int c2 = tok_nextc(tok);
-        int token = PyToken_TwoChars(c, c2);
+        int token = PyToken_TwoChars(c, c2, isLastTokenVariable);
         if (token != OP) {
             int c3 = tok_nextc(tok);
+            if (token == PLUSPLUS || token == MINUSMINUS) {
+                int spaces_and_tabs_found = 0;
+                int next_token = c3;
+                /* Remove next whitespaces and horizontal tabs */
+                while (next_token == 32 || next_token == 9) {
+                    ++spaces_and_tabs_found;
+                    next_token = tok_nextc(tok);
+                }
+                /* Ignore situations like '1++1', 'x--1', etc. */
+                if (next_token != 10) {
+                    token = OP;
+                    /* 'Insert' the removed whitespaces and horizontal tabs */
+                    tok->cur -= spaces_and_tabs_found;
+                }
+            }
             int token3 = PyToken_ThreeChars(c, c2, c3);
             if (token3 != OP) {
                 token = token3;
@@ -1815,9 +1833,11 @@ tok_get(struct tok_state *tok, const char **p_start, const char **p_end)
             else {
                 tok_backup(tok, c3);
             }
-            *p_start = tok->start;
-            *p_end = tok->cur;
-            return token;
+            if (token != OP) {
+                *p_start = tok->start;
+                *p_end = tok->cur;
+                return token;
+            }
         }
         tok_backup(tok, c2);
     }
@@ -1873,6 +1893,7 @@ int
 PyTokenizer_Get(struct tok_state *tok, const char **p_start, const char **p_end)
 {
     int result = tok_get(tok, p_start, p_end);
+    isLastTokenVariable = result == NAME;
     if (tok->decoding_erred) {
         result = ERRORTOKEN;
         tok->done = E_DECODE;

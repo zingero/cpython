@@ -104,6 +104,8 @@ assignment[stmt_ty]:
          _PyAST_Assign(a, b, NEW_TYPE_COMMENT(p, tc), EXTRA) }
     | a=single_target b=augassign ~ c=(yield_expr | star_expressions) {
          _PyAST_AugAssign(a, b->kind, c, EXTRA) }
+    | a=single_target b=incrementation_or_decrementation {
+         _PyAST_AugAssign(a, b->kind, c, EXTRA) }
     | invalid_assignment
 
 augassign[AugOperator*]:
@@ -120,6 +122,10 @@ augassign[AugOperator*]:
     | '>>=' { _PyPegen_augoperator(p, RShift) }
     | '**=' { _PyPegen_augoperator(p, Pow) }
     | '//=' { _PyPegen_augoperator(p, FloorDiv) }
+
+incrementation_or_decrementation[AugOperator*]:
+    | '++' { _PyPegen_augoperator(p, Add) }
+    | '--' { _PyPegen_augoperator(p, Sub) }
 
 global_stmt[stmt_ty]: 'global' a[asdl_expr_seq*]=','.NAME+ {
     _PyAST_Global(CHECK(asdl_identifier_seq*, _PyPegen_map_names_to_ids(p, a)), EXTRA) }

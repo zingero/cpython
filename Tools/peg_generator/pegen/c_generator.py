@@ -671,6 +671,9 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
         self.print(")")
 
     def emit_action(self, node: Alt, cleanup_code: Optional[str] = None) -> None:
+        if str(node) == "single_target incrementation_or_decrementation":
+            self.print(f'expr_ty c = _PyPegen_create_constant( p, _token, "1" );')
+
         self.print(f"_res = {node.action};")
 
         self.print("if (_res == NULL && PyErr_Occurred()) {")

@@ -131,6 +131,7 @@ Token *_PyPegen_get_last_nonnwhitespace_token(Parser *);
 int _PyPegen_fill_token(Parser *p);
 expr_ty _PyPegen_name_token(Parser *p);
 expr_ty _PyPegen_number_token(Parser *p);
+expr_ty _PyPegen_create_constant(Parser *p, Token * t, char * num_raw);
 void *_PyPegen_string_token(Parser *p);
 const char *_PyPegen_get_expr_name(expr_ty);
 void *_PyPegen_raise_error(Parser *p, PyObject *errtype, const char *errmsg, ...);

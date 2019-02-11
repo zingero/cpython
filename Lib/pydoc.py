@@ -1858,7 +1858,7 @@ class Helper:
         'OPERATORS' : ('+', '-', '*', '**', '/', '//', '%', '<<', '>>', '&',
                        '|', '^', '~', '<', '>', '<=', '>=', '==', '!=', '<>'),
         'COMPARISON' : ('<', '>', '<=', '>=', '==', '!=', '<>'),
-        'UNARY' : ('-', '~'),
+        'UNARY' : ('-', '~', '++', '--'),
         'AUGMENTEDASSIGNMENT' : ('+=', '-=', '*=', '/=', '%=', '&=', '|=',
                                 '^=', '<<=', '>>=', '**=', '//='),
         'BITWISE' : ('<<', '>>', '&', '|', '^', '~'),
@@ -1879,7 +1879,9 @@ class Helper:
         '(': 'TUPLES FUNCTIONS CALLS',
         ')': 'TUPLES FUNCTIONS CALLS',
         '[': 'LISTS SUBSCRIPTS SLICINGS',
-        ']': 'LISTS SUBSCRIPTS SLICINGS'
+        ']': 'LISTS SUBSCRIPTS SLICINGS',
+        '++': 'INCREMENT',
+        '--': 'DECREMENT'
     }
     for topic, symbols_ in _symbols_inverse.items():
         for symbol in symbols_:

@@ -4,6 +4,8 @@ from tokenize import (tokenize, _tokenize, untokenize, NUMBER, NAME, OP,
                      STRING, ENDMARKER, ENCODING, tok_name, detect_encoding,
                      open as tokenize_open, Untokenizer, generate_tokens,
                      NEWLINE)
+import tokenize as tokenize_module
+
 from io import BytesIO, StringIO
 import unittest
 from unittest import TestCase, mock
@@ -1417,6 +1419,10 @@ class TestTokenize(TestCase):
         self.assertExactTypeEqual('>>', token.RIGHTSHIFT)
         self.assertExactTypeEqual('**', token.DOUBLESTAR)
         self.assertExactTypeEqual('+=', token.PLUSEQUAL)
+        tokenize_module.isLastTokenVariable = True
+        self.assertExactTypeEqual('++', token.PLUSPLUS)
+        self.assertExactTypeEqual('--', token.MINUSMINUS)
+        tokenize_module.isLastTokenVariable = False
         self.assertExactTypeEqual('-=', token.MINEQUAL)
         self.assertExactTypeEqual('*=', token.STAREQUAL)
         self.assertExactTypeEqual('/=', token.SLASHEQUAL)
