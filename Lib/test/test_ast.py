@@ -201,6 +201,10 @@ exec_tests = [
     "def f[T, *Ts, **P](): pass",
     "def f[T: int, *Ts, **P](): pass",
     "def f[T: (int, str), *Ts, **P](): pass",
+    # Incr
+    "v++",
+    # Decr
+    "v--",
 ]
 
 # These are compiled through "single"
