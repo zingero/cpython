@@ -940,6 +940,12 @@ _PyPegen_number_token(Parser *p)
     }
 
     char *num_raw = PyBytes_AsString(t->bytes);
+    return _PyPegen_create_constant(p, t, num_raw);
+}
+
+expr_ty
+_PyPegen_create_constant(Parser *p, Token * t, char * num_raw)
+{
     if (num_raw == NULL) {
         p->error_indicator = 1;
         return NULL;

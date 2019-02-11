@@ -77,7 +77,7 @@ extern "C" {
 
 PyAPI_DATA(const char * const) _PyParser_TokenNames[]; /* Token names */
 PyAPI_FUNC(int) PyToken_OneChar(int);
-PyAPI_FUNC(int) PyToken_TwoChars(int, int);
+PyAPI_FUNC(int) PyToken_TwoChars(int, int, int);
 PyAPI_FUNC(int) PyToken_ThreeChars(int, int, int);
 
 #ifdef __cplusplus
@@ -108,6 +108,8 @@ token_c_template = """\
 #include "Python.h"
 #include "token.h"
 
+#define DEFAULT_TOKEN OP
+
 /* Token names */
 
 const char * const _PyParser_TokenNames[] = {
@@ -120,21 +122,21 @@ int
 PyToken_OneChar(int c1)
 {
 %s\
-    return OP;
+    return DEFAULT_TOKEN;
 }
 
 int
-PyToken_TwoChars(int c1, int c2)
+PyToken_TwoChars(int c1, int c2, int isLastTokenVariable)
 {
 %s\
-    return OP;
+    return DEFAULT_TOKEN;
 }
 
 int
 PyToken_ThreeChars(int c1, int c2, int c3)
 {
 %s\
-    return OP;
+    return DEFAULT_TOKEN;
 }
 """
 
@@ -152,6 +154,8 @@ def generate_chars_to_token(mapping, n=1):
             write(generate_chars_to_token(value, n + 1))
             write(indent)
             write('    break;\n')
+        elif value in ['PLUSPLUS', 'MINUSMINUS']:
+            write("case '%s': return isLastTokenVariable? %s : DEFAULT_TOKEN;\n" % (c, value))
         else:
             write("case '%s': return %s;\n" % (c, value))
     write(indent)

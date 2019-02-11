@@ -959,6 +959,7 @@
     <Compile Include="test\test_dbm_ndbm.py" />
     <Compile Include="test\test_decimal.py" />
     <Compile Include="test\test_decorators.py" />
+    <Compile Include="test\test_decr.py" />
     <Compile Include="test\test_defaultdict.py" />
     <Compile Include="test\test_deque.py" />
     <Compile Include="test\test_descr.py" />
@@ -1130,6 +1131,7 @@
     <Compile Include="test\test_import\data\unwritable\x.py" />
     <Compile Include="test\test_import\__init__.py" />
     <Compile Include="test\test_import\__main__.py" />
+    <Compile Include="test\test_incr.py" />
     <Compile Include="test\test_index.py" />
     <Compile Include="test\test_inspect.py" />
     <Compile Include="test\test_int.py" />

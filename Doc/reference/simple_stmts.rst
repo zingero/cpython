@@ -28,6 +28,8 @@ simple statements is:
               : | `future_stmt`
               : | `global_stmt`
               : | `nonlocal_stmt`
+              : | `incr_stmt`
+              : | `decr_stmt`
 
 
 .. _exprstmts:

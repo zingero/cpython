@@ -161,6 +161,10 @@ exec_tests = [
     "def f(a=1, /, b=2, *, c=4, **kwargs): pass",
     "def f(a=1, /, b=2, *, c, **kwargs): pass",
 
+    # Incr
+    "v++",
+    # Decr
+    "v--",
 ]
 
 # These are compiled through "single"
