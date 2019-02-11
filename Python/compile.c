@@ -439,6 +439,7 @@ static int compiler_visit_stmt(struct compiler *, stmt_ty);
 static int compiler_visit_keyword(struct compiler *, keyword_ty);
 static int compiler_visit_expr(struct compiler *, expr_ty);
 static int compiler_augassign(struct compiler *, stmt_ty);
+static int compiler_incdecassign(struct compiler *, stmt_ty);
 static int compiler_annassign(struct compiler *, stmt_ty);
 static int compiler_subscript(struct compiler *, expr_ty);
 static int compiler_slice(struct compiler *, expr_ty);
@@ -4018,6 +4019,8 @@ compiler_visit_stmt(struct compiler *c, stmt_ty s)
     }
     case AugAssign_kind:
         return compiler_augassign(c, s);
+    case IncDecAssign_kind:
+        return compiler_incdecassign(c, s);
     case AnnAssign_kind:
         return compiler_annassign(c, s);
     case For_kind:
@@ -6355,6 +6358,82 @@ compiler_augassign(struct compiler *c, stmt_ty s)
 
     VISIT(c, expr, s->v.AugAssign.value);
     ADDOP_INPLACE(c, loc, s->v.AugAssign.op);
+
+    loc = LOC(e);
+
+    switch (e->kind) {
+    case Attribute_kind:
+        loc = update_start_location_to_match_attr(c, loc, e);
+        ADDOP_I(c, loc, SWAP, 2);
+        ADDOP_NAME(c, loc, STORE_ATTR, e->v.Attribute.attr, names);
+        break;
+    case Subscript_kind:
+        if (is_two_element_slice(e->v.Subscript.slice)) {
+            ADDOP_I(c, loc, SWAP, 4);
+            ADDOP_I(c, loc, SWAP, 3);
+            ADDOP_I(c, loc, SWAP, 2);
+            ADDOP(c, loc, STORE_SLICE);
+        }
+        else {
+            ADDOP_I(c, loc, SWAP, 3);
+            ADDOP_I(c, loc, SWAP, 2);
+            ADDOP(c, loc, STORE_SUBSCR);
+        }
+        break;
+    case Name_kind:
+        return compiler_nameop(c, loc, e->v.Name.id, Store);
+    default:
+        Py_UNREACHABLE();
+    }
+    return SUCCESS;
+}
+
+static int
+compiler_incdecassign(struct compiler *c, stmt_ty s)
+{
+    assert(s->kind == IncDecAssign_kind);
+    expr_ty e = s->v.IncDecAssign.target;
+
+    location loc = LOC(e);
+
+    switch (e->kind) {
+    case Attribute_kind:
+        VISIT(c, expr, e->v.Attribute.value);
+        ADDOP_I(c, loc, COPY, 1);
+        loc = update_start_location_to_match_attr(c, loc, e);
+        ADDOP_NAME(c, loc, LOAD_ATTR, e->v.Attribute.attr, names);
+        break;
+    case Subscript_kind:
+        VISIT(c, expr, e->v.Subscript.value);
+        if (is_two_element_slice(e->v.Subscript.slice)) {
+            RETURN_IF_ERROR(compiler_slice(c, e->v.Subscript.slice));
+            ADDOP_I(c, loc, COPY, 3);
+            ADDOP_I(c, loc, COPY, 3);
+            ADDOP_I(c, loc, COPY, 3);
+            ADDOP(c, loc, BINARY_SLICE);
+        }
+        else {
+            VISIT(c, expr, e->v.Subscript.slice);
+            ADDOP_I(c, loc, COPY, 2);
+            ADDOP_I(c, loc, COPY, 2);
+            ADDOP(c, loc, BINARY_SUBSCR);
+        }
+        break;
+    case Name_kind:
+        RETURN_IF_ERROR(compiler_nameop(c, loc, e->v.Name.id, Load));
+        break;
+    default:
+        PyErr_Format(PyExc_SystemError,
+            "invalid node type (%d) for incrementation or decrementation",
+            e->kind);
+        return ERROR;
+    }
+
+    loc = LOC(s);
+
+    PyObject * ONE = PyLong_FromLong(01);
+    ADDOP_LOAD_CONST(c, loc, ONE);
+    ADDOP_INPLACE(c, loc, (operator_ty)(s->v.IncDecAssign.op));
 
     loc = LOC(e);
 
