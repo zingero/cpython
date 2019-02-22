@@ -8,10 +8,13 @@ extern "C" {
 
 /* Tokenizer interface */
 
-#include "token.h"      /* For token types */
+#include "token.h"          /* For token types */
 
-#define MAXINDENT 100   /* Max indentation level */
-#define MAXLEVEL 200    /* Max parentheses level */
+#define MAXINDENT 100       /* Max indentation level */
+#define MAXLEVEL 200        /* Max parentheses level */
+#define HORIZONTAL_TAB 9    /* ASCII value for horizontal tab: '\t' */
+#define NEWLINE_IN_ASCII 10 /* ASCII value for newline: '\n' */
+#define WHITESPACE 32       /* ASCII value for whitespace: ' ' */
 
 enum decoding_state {
     STATE_INIT,

@@ -1815,12 +1815,12 @@ tok_get(struct tok_state *tok, const char **p_start, const char **p_end)
                 int spaces_and_tabs_found = 0;
                 int next_token = c3;
                 /* Remove next whitespaces and horizontal tabs */
-                while (next_token == 32 || next_token == 9) {
+                while (next_token == WHITESPACE || next_token == HORIZONTAL_TAB) {
                     ++spaces_and_tabs_found;
                     next_token = tok_nextc(tok);
                 }
                 /* Ignore situations like '1++1', 'x--1', etc. */
-                if (next_token != 10) {
+                if (next_token != NEWLINE_IN_ASCII) {
                     token = OP;
                     /* 'Insert' the removed whitespaces and horizontal tabs */
                     tok->cur -= spaces_and_tabs_found;
