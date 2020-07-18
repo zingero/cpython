@@ -2809,11 +2809,13 @@ check_compare(struct compiler *c, expr_ty e)
         cmpop_ty op = (cmpop_ty)asdl_seq_GET(e->v.Compare.ops, i);
         expr_ty right_expr = (expr_ty)asdl_seq_GET(e->v.Compare.comparators, i);
         bool right = check_is_arg(right_expr);
-        if (op == Is || op == IsNot) {
+        if (op == Is || op == IsNot || op == Isnt) {
             if (!right || !left) {
                 const char *msg = (op == Is)
                         ? "\"is\" with '%.200s' literal. Did you mean \"==\"?"
-                        : "\"is not\" with '%.200s' literal. Did you mean \"!=\"?";
+                        : (op == IsNot)
+                        ? "\"is not\" with '%.200s' literal. Did you mean \"!=\"?"
+                        : "\"isnt\" with a '%.200s'. Did you mean \"!=\"?";
                 expr_ty literal = !left ? left_expr : right_expr;
                 return compiler_warn(
                     c, LOC(e), msg, infer_type(literal)->tp_name
@@ -2862,6 +2864,9 @@ static int compiler_addcompare(struct compiler *c, location loc,
         ADDOP_I(c, loc, IS_OP, 0);
         return SUCCESS;
     case IsNot:
+        ADDOP_I(c, loc, IS_OP, 1);
+        return SUCCESS;
+    case Isnt:
         ADDOP_I(c, loc, IS_OP, 1);
         return SUCCESS;
     case In:

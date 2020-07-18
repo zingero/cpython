@@ -1847,6 +1847,7 @@ class Helper:
         'import': ('import', 'MODULES'),
         'in': ('in', 'SEQUENCEMETHODS'),
         'is': 'COMPARISON',
+        'isnt': 'COMPARISON',
         'lambda': ('lambda', 'FUNCTIONS'),
         'nonlocal': ('nonlocal', 'global NAMESPACES'),
         'not': 'BOOLEAN',
