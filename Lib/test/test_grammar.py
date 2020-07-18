@@ -1405,7 +1405,7 @@ class GrammarTests(unittest.TestCase):
 
     def test_comparison(self):
         ### comparison: expr (comp_op expr)*
-        ### comp_op: '<'|'>'|'=='|'>='|'<='|'!='|'in'|'not' 'in'|'is'|'is' 'not'
+        ### comp_op: '<'|'>'|'=='|'>='|'<='|'!='|'in'|'not' 'in'|'is'|'is' 'not'|'isnt'
         if 1: pass
         x = (1 == 1)
         if 1 == 1: pass
@@ -1416,6 +1416,7 @@ class GrammarTests(unittest.TestCase):
         if 1 >= 1: pass
         if x is x: pass
         if x is not x: pass
+        if x isnt x: pass
         if 1 in (): pass
         if 1 not in (): pass
         if 1 < 1 > 1 == 1 >= 1 <= 1 != 1 in 1 not in x is x is not x: pass

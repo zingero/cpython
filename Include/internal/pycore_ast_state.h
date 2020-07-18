@@ -86,6 +86,8 @@ struct ast_state {
     PyObject *IsNot_type;
     PyObject *Is_singleton;
     PyObject *Is_type;
+    PyObject *Isnt_singleton;
+    PyObject *Isnt_type;
     PyObject *JoinedStr_type;
     PyObject *LShift_singleton;
     PyObject *LShift_type;

@@ -691,7 +691,7 @@ f'__{
     def test_comparison(self):
         # Comparison
         self.check_tokenize("if 1 < 1 > 1 == 1 >= 5 <= 0x15 <= 0x12 != "
-                            "1 and 5 in 1 not in 1 is 1 or 5 is not 1: pass", """\
+                            "1 and 5 in 1 not in 1 is 1 or 5 is not 1 and 1 isnt 5: pass", """\
     NAME       'if'          (1, 0) (1, 2)
     NUMBER     '1'           (1, 3) (1, 4)
     OP         '<'           (1, 5) (1, 6)
@@ -722,8 +722,12 @@ f'__{
     NAME       'is'          (1, 74) (1, 76)
     NAME       'not'         (1, 77) (1, 80)
     NUMBER     '1'           (1, 81) (1, 82)
-    OP         ':'           (1, 82) (1, 83)
-    NAME       'pass'        (1, 84) (1, 88)
+    NAME       'and'         (1, 83) (1, 86)
+    NUMBER     '1'           (1, 87) (1, 88)
+    NAME       'isnt'        (1, 89) (1, 93)
+    NUMBER     '5'           (1, 94) (1, 95)
+    OP         ':'           (1, 95) (1, 96)
+    NAME       'pass'        (1, 97) (1, 101)
     """)
 
     def test_shift(self):

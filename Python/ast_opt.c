@@ -96,6 +96,7 @@ fold_unaryop(expr_ty node, PyArena *arena, _PyASTOptimizeState *state)
                 op = IsNot;
                 break;
             case IsNot:
+            case Isnt:
                 op = Is;
                 break;
             case In:
