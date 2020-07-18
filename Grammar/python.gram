@@ -566,7 +566,7 @@ gt_bitwise_or[CmpopExprPair*]: '>' a=bitwise_or { _PyPegen_cmpop_expr_pair(p, Gt
 notin_bitwise_or[CmpopExprPair*]: 'not' 'in' a=bitwise_or { _PyPegen_cmpop_expr_pair(p, NotIn, a) }
 in_bitwise_or[CmpopExprPair*]: 'in' a=bitwise_or { _PyPegen_cmpop_expr_pair(p, In, a) }
 isnot_bitwise_or[CmpopExprPair*]: 'is' 'not' a=bitwise_or { _PyPegen_cmpop_expr_pair(p, IsNot, a) }
-isnt_bitwise_or[CmpopExprPair*]: 'isnt' a=bitwise_or { _PyPegen_cmpop_expr_pair(p, IsNot, a) }
+isnt_bitwise_or[CmpopExprPair*]: 'isnt' a=bitwise_or { _PyPegen_cmpop_expr_pair(p, Isnt, a) }
 is_bitwise_or[CmpopExprPair*]: 'is' a=bitwise_or { _PyPegen_cmpop_expr_pair(p, Is, a) }
 
 bitwise_or[expr_ty]:

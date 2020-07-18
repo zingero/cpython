@@ -498,6 +498,9 @@ append_ast_compare(_PyUnicodeWriter *writer, expr_ty e, int level)
         case NotIn:
             op = " not in ";
             break;
+        case Isnt:
+            op = " isnt ";
+            break;
         default:
             PyErr_SetString(PyExc_SystemError,
                             "unexpected comparison kind");

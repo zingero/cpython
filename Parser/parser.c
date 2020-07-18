@@ -11843,7 +11843,7 @@ isnt_bitwise_or_rule(Parser *p)
         )
         {
             D(fprintf(stderr, "%*c+ isnt_bitwise_or[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'isnt' bitwise_or"));
-            _res = _PyPegen_cmpop_expr_pair ( p , IsNot , a );
+            _res = _PyPegen_cmpop_expr_pair ( p , Isnt , a );
             if (_res == NULL && PyErr_Occurred()) {
                 p->error_indicator = 1;
                 D(p->level--);
