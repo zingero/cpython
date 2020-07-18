@@ -472,6 +472,7 @@ Expressions
            IsNot
            In
            NotIn
+           Isnt
 
    Comparison operator tokens.
 

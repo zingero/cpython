@@ -1382,6 +1382,7 @@ class _Unparser(NodeVisitor):
         "IsNot": "is not",
         "In": "in",
         "NotIn": "not in",
+        "Isnt": "isnt",
     }
 
     def visit_Compare(self, node):

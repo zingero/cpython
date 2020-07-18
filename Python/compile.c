@@ -2444,7 +2444,7 @@ check_compare(struct compiler *c, expr_ty e)
     for (i = 0; i < n; i++) {
         cmpop_ty op = (cmpop_ty)asdl_seq_GET(e->v.Compare.ops, i);
         int right = check_is_arg((expr_ty)asdl_seq_GET(e->v.Compare.comparators, i));
-        if (op == Is || op == IsNot) {
+        if (op == Is || op == IsNot || op == Isnt) {
             if (!right || !left) {
                 const char *msg = (op == Is)
                         ? "\"is\" with a literal. Did you mean \"==\"?"
@@ -2483,6 +2483,7 @@ static int compiler_addcompare(struct compiler *c, cmpop_ty op)
         ADDOP_I(c, IS_OP, 0);
         return 1;
     case IsNot:
+    case Isnt:
         ADDOP_I(c, IS_OP, 1);
         return 1;
     case In:
