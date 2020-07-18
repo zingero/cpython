@@ -1371,7 +1371,7 @@ in mathematics:
 .. productionlist:: python-grammar
    comparison: `or_expr` (`comp_operator` `or_expr`)*
    comp_operator: "<" | ">" | "==" | ">=" | "<=" | "!="
-                : | "is" ["not"] | ["not"] "in"
+                : | "is" ["not"] | ["not"] "in" | "isnt"
 
 Comparisons yield boolean values: ``True`` or ``False``.
 
