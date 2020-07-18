@@ -40,6 +40,7 @@ kwlist = [
     'import',
     'in',
     'is',
+    'isnt',
     'lambda',
     'nonlocal',
     'not',

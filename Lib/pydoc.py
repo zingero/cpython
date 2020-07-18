@@ -1870,6 +1870,7 @@ class Helper:
         'import': ('import', 'MODULES'),
         'in': ('in', 'SEQUENCEMETHODS'),
         'is': 'COMPARISON',
+        'isnt': 'COMPARISON',
         'lambda': ('lambda', 'FUNCTIONS'),
         'lazy': ('lazy', 'MODULES'),
         'match': ('match', 'if'),
