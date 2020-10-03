@@ -951,7 +951,7 @@ All of the following opcodes use their arguments.
 
 .. opcode:: IS_OP (invert)
 
-   Performs ``is`` comparison, or ``is not`` if ``invert`` is 1.
+   Performs ``is`` comparison, or ``is not`` or ``isnt`` if ``invert`` is 1.
 
    .. versionadded:: 3.9
 

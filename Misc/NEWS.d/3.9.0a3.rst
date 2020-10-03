@@ -191,7 +191,7 @@ exception handlers with name binding. Patch by Pablo Galindo.
 Split the COMPARE_OP bytecode instruction into four distinct instructions.
 
 *  COMPARE_OP for rich comparisons
-*  IS_OP for 'is' and 'is not' tests
+*  IS_OP for 'is', 'is not' and 'isnt' tests
 *  CONTAINS_OP for 'in' and 'is not' tests
 *  JUMP_IF_NOT_EXC_MATCH for checking exceptions in 'try-except' statements.
 
