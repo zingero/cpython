@@ -864,6 +864,16 @@ class _Unparser(NodeVisitor):
         self.write(" " + self.binop[node.op.__class__.__name__] + "= ")
         self.traverse(node.value)
 
+    incdecop = {
+        "Inc": "++",
+        "Dec": "--"
+    }
+
+    def visit_IncDecAssign(self, node):
+        self.fill()
+        self.traverse(node.target)
+        self.write(self.incdecop[node.op.__class__.__name__])
+
     def visit_AnnAssign(self, node):
         self.fill()
         with self.delimit_if("(", ")", not node.simple and isinstance(node.target, Name)):

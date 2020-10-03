@@ -222,6 +222,7 @@ static int compiler_visit_stmt(struct compiler *, stmt_ty);
 static int compiler_visit_keyword(struct compiler *, keyword_ty);
 static int compiler_visit_expr(struct compiler *, expr_ty);
 static int compiler_augassign(struct compiler *, stmt_ty);
+static int compiler_incdecassign(struct compiler *, stmt_ty);
 static int compiler_annassign(struct compiler *, stmt_ty);
 static int compiler_subscript(struct compiler *, expr_ty);
 static int compiler_slice(struct compiler *, expr_ty);
@@ -3391,6 +3392,8 @@ compiler_visit_stmt(struct compiler *c, stmt_ty s)
         break;
     case AugAssign_kind:
         return compiler_augassign(c, s);
+    case IncDecAssign_kind:
+        return compiler_incdecassign(c, s);
     case AnnAssign_kind:
         return compiler_annassign(c, s);
     case For_kind:
@@ -5163,6 +5166,65 @@ compiler_augassign(struct compiler *c, stmt_ty s)
 
     VISIT(c, expr, s->v.AugAssign.value);
     ADDOP(c, inplace_binop(s->v.AugAssign.op));
+
+    SET_LOC(c, e);
+
+    switch (e->kind) {
+    case Attribute_kind:
+        ADDOP(c, ROT_TWO);
+        ADDOP_NAME(c, STORE_ATTR, e->v.Attribute.attr, names);
+        break;
+    case Subscript_kind:
+        ADDOP(c, ROT_THREE);
+        ADDOP(c, STORE_SUBSCR);
+        break;
+    case Name_kind:
+        return compiler_nameop(c, e->v.Name.id, Store);
+    default:
+        Py_UNREACHABLE();
+    }
+    return 1;
+}
+
+static int
+compiler_incdecassign(struct compiler *c, stmt_ty s)
+{
+    assert(s->kind == IncDecAssign_kind);
+    expr_ty e = s->v.IncDecAssign.target;
+
+    int old_lineno = c->u->u_lineno;
+    int old_col_offset = c->u->u_col_offset;
+    SET_LOC(c, e);
+
+    switch (e->kind) {
+    case Attribute_kind:
+        VISIT(c, expr, e->v.Attribute.value);
+        ADDOP(c, DUP_TOP);
+        ADDOP_NAME(c, LOAD_ATTR, e->v.Attribute.attr, names);
+        break;
+    case Subscript_kind:
+        VISIT(c, expr, e->v.Subscript.value);
+        VISIT(c, expr, e->v.Subscript.slice);
+        ADDOP(c, DUP_TOP_TWO);
+        ADDOP(c, BINARY_SUBSCR);
+        break;
+    case Name_kind:
+        if (!compiler_nameop(c, e->v.Name.id, Load))
+            return 0;
+        break;
+    default:
+        PyErr_Format(PyExc_SystemError,
+            "invalid node type (%d) for incrementation or decrementation",
+            e->kind);
+        return 0;
+    }
+
+    c->u->u_lineno = old_lineno;
+    c->u->u_col_offset = old_col_offset;
+
+    PyObject * ONE = PyLong_FromLong(01);
+    ADDOP_LOAD_CONST(c, ONE);
+    ADDOP(c, inplace_binop(s->v.IncDecAssign.op));
 
     SET_LOC(c, e);
 

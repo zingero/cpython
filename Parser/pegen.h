@@ -107,6 +107,10 @@ typedef struct {
 } AugOperator;
 
 typedef struct {
+    operator_ty kind;
+} IncDecOperator;
+
+typedef struct {
     void *element;
     int is_keyword;
 } KeywordOrStarred;
@@ -129,7 +133,6 @@ Token *_PyPegen_get_last_nonnwhitespace_token(Parser *);
 int _PyPegen_fill_token(Parser *p);
 expr_ty _PyPegen_name_token(Parser *p);
 expr_ty _PyPegen_number_token(Parser *p);
-expr_ty _PyPegen_create_constant(Parser *p, Token * t, char * num_raw);
 void *_PyPegen_string_token(Parser *p);
 const char *_PyPegen_get_expr_name(expr_ty);
 void *_PyPegen_raise_error(Parser *p, PyObject *errtype, const char *errmsg, ...);
@@ -254,6 +257,7 @@ arguments_ty _PyPegen_make_arguments(Parser *, asdl_arg_seq *, SlashWithDefault 
                                      asdl_arg_seq *, asdl_seq *, StarEtc *);
 arguments_ty _PyPegen_empty_arguments(Parser *);
 AugOperator *_PyPegen_augoperator(Parser*, operator_ty type);
+IncDecOperator *_PyPegen_incdecoperator(Parser*, operator_ty type);
 stmt_ty _PyPegen_function_def_decorators(Parser *, asdl_expr_seq *, stmt_ty);
 stmt_ty _PyPegen_class_def_decorators(Parser *, asdl_expr_seq *, stmt_ty);
 KeywordOrStarred *_PyPegen_keyword_or_starred(Parser *, void *, int);

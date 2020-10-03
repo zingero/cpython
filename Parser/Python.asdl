@@ -24,6 +24,7 @@ module Python
 
           | Delete(expr* targets)
           | Assign(expr* targets, expr value, string? type_comment)
+          | IncDecAssign(expr target, inc_dec_operator op)
           | AugAssign(expr target, operator op, expr value)
           -- 'simple' indicates that we annotate simple name without parens
           | AnnAssign(expr target, expr annotation, expr? value, int simple)
@@ -93,6 +94,8 @@ module Python
     expr_context = Load | Store | Del
 
     boolop = And | Or
+
+    inc_dec_operator = Inc | Dec
 
     operator = Add | Sub | Mult | MatMult | Div | Mod | Pow | LShift
                  | RShift | BitOr | BitXor | BitAnd | FloorDiv
