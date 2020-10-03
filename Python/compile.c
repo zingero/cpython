@@ -2448,7 +2448,9 @@ check_compare(struct compiler *c, expr_ty e)
             if (!right || !left) {
                 const char *msg = (op == Is)
                         ? "\"is\" with a literal. Did you mean \"==\"?"
-                        : "\"is not\" with a literal. Did you mean \"!=\"?";
+                        : (op == IsNot)
+                        ? "\"is not\" with a literal. Did you mean \"!=\"?"
+                        : "\"isnt\" with a literal. Did you mean \"!=\"?";
                 return compiler_warn(c, msg);
             }
         }
