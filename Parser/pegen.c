@@ -1042,12 +1042,6 @@ _PyPegen_number_token(Parser *p)
     }
 
     char *num_raw = PyBytes_AsString(t->bytes);
-    return _PyPegen_create_constant(p, t, num_raw);
-}
-
-expr_ty
-_PyPegen_create_constant(Parser *p, Token * t, char * num_raw)
-{
     if (num_raw == NULL) {
         p->error_indicator = 1;
         return NULL;
@@ -2079,6 +2073,18 @@ AugOperator *
 _PyPegen_augoperator(Parser *p, operator_ty kind)
 {
     AugOperator *a = _PyArena_Malloc(p->arena, sizeof(AugOperator));
+    if (!a) {
+        return NULL;
+    }
+    a->kind = kind;
+    return a;
+}
+
+/* Encapsulates the value of an operator_ty into an IncDecOperator struct */
+IncDecOperator *
+_PyPegen_incdecoperator(Parser *p, operator_ty kind)
+{
+    IncDecOperator *a = PyArena_Malloc(p->arena, sizeof(IncDecOperator));
     if (!a) {
         return NULL;
     }
