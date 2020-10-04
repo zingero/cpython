@@ -3075,7 +3075,8 @@ SimpleExtendsException(PyExc_LookupError, IndexError,
 static PyObject *
 KeyError_str(PyObject *op)
 {
-    /* If args is a tuple of exactly one item, apply repr to args[0].
+    /* If args is a tuple of exactly one item, apply repr to args[0]
+       after adding some more information since it's nicer in logs.
        This is done so that e.g. the exception raised by {}[''] prints
          KeyError: ''
        rather than the confusing
@@ -3086,7 +3087,8 @@ KeyError_str(PyObject *op)
     */
     PyBaseExceptionObject *self = PyBaseExceptionObject_CAST(op);
     if (PyTuple_GET_SIZE(self->args) == 1) {
-        return PyObject_Repr(PyTuple_GET_ITEM(self->args, 0));
+        PyObject *str = PyUnicode_FromFormat("Missing key: %R", PyTuple_GET_ITEM(self->args, 0));
+        return PyObject_Str(str);
     }
     return BaseException_str(op);
 }
