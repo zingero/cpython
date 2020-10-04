@@ -2553,5 +2553,14 @@ class PEP626Tests(unittest.TestCase):
                 1/0
         self.lineno_after_raise(after_with, 1, 1)
 
+    def test_key_error(self):
+        d = {}
+        no_key = "no key"
+        try:
+            d[no_key]
+        except KeyError as e:
+            assert str(e) == f"Missing key: '{no_key}'", f"Exception: {e} has no added string"
+
+
 if __name__ == '__main__':
     unittest.main()

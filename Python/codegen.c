@@ -196,6 +196,7 @@ static int codegen_visit_stmt(compiler *, stmt_ty);
 static int codegen_visit_keyword(compiler *, keyword_ty);
 static int codegen_visit_expr(compiler *, expr_ty);
 static int codegen_augassign(compiler *, stmt_ty);
+static int codegen_incdecassign(compiler *, stmt_ty);
 static int codegen_annassign(compiler *, stmt_ty);
 static int codegen_subscript(compiler *, expr_ty);
 static int codegen_slice_two_parts(compiler *, expr_ty);
@@ -1727,7 +1728,7 @@ codegen_check_compare(compiler *c, expr_ty e)
         cmpop_ty op = (cmpop_ty)asdl_seq_GET(e->v.Compare.ops, i);
         expr_ty right_expr = (expr_ty)asdl_seq_GET(e->v.Compare.comparators, i);
         bool right = check_is_arg(right_expr);
-        if (op == Is || op == IsNot) {
+        if (op == Is || op == IsNot || op == Isnt) {
             if (!right || !left) {
                 const char *msg = (op == Is)
                         ? "\"is\" with '%.200s' literal. Did you mean \"==\"?"
@@ -1771,6 +1772,7 @@ codegen_addcompare(compiler *c, location loc, cmpop_ty op)
         ADDOP_I(c, loc, IS_OP, 0);
         return SUCCESS;
     case IsNot:
+    case Isnt:
         ADDOP_I(c, loc, IS_OP, 1);
         return SUCCESS;
     case In:
@@ -2917,6 +2919,8 @@ codegen_visit_stmt(compiler *c, stmt_ty s)
     }
     case AugAssign_kind:
         return codegen_augassign(c, s);
+    case IncDecAssign_kind:
+        return codegen_incdecassign(c, s);
     case AnnAssign_kind:
         return codegen_annassign(c, s);
     case For_kind:
@@ -5157,6 +5161,83 @@ codegen_augassign(compiler *c, stmt_ty s)
         break;
     case Name_kind:
         return codegen_nameop(c, loc, e->v.Name.id, Store);
+    default:
+        Py_UNREACHABLE();
+    }
+    return SUCCESS;
+}
+
+static int
+codegen_incdecassign(compiler *c, stmt_ty s)
+{
+    assert(s->kind == IncDecAssign_kind);
+    expr_ty e = s->v.IncDecAssign.target;
+
+    location loc = LOC(e);
+
+    switch (e->kind) {
+    case Attribute_kind:
+        VISIT(c, expr, e->v.Attribute.value);
+        ADDOP_I(c, loc, COPY, 1);
+        loc = update_start_location_to_match_attr(c, loc, e);
+        ADDOP_NAME(c, loc, LOAD_ATTR, e->v.Attribute.attr, names);
+        break;
+    case Subscript_kind:
+        VISIT(c, expr, e->v.Subscript.value);
+        if (should_apply_two_element_slice_optimization(e->v.Subscript.slice)) {
+            RETURN_IF_ERROR(codegen_slice_two_parts(c, e->v.Subscript.slice));
+            ADDOP_I(c, loc, COPY, 3);
+            ADDOP_I(c, loc, COPY, 3);
+            ADDOP_I(c, loc, COPY, 3);
+            ADDOP(c, loc, BINARY_SLICE);
+        }
+        else {
+            VISIT(c, expr, e->v.Subscript.slice);
+            ADDOP_I(c, loc, COPY, 2);
+            ADDOP_I(c, loc, COPY, 2);
+            ADDOP(c, loc, BINARY_SUBSCR);
+        }
+        break;
+    case Name_kind:
+        RETURN_IF_ERROR(codegen_nameop(c, loc, e->v.Name.id, Load));
+        break;
+    default:
+        PyErr_Format(PyExc_SystemError,
+            "invalid node type (%d) for incrementation or decrementation",
+            e->kind);
+        return ERROR;
+    }
+
+    loc = LOC(s);
+
+    PyObject * ONE = PyLong_FromLong(01);
+    ADDOP_LOAD_CONST(c, loc, ONE);
+    ADDOP_INPLACE(c, loc, (operator_ty)(s->v.IncDecAssign.op));
+
+    loc = LOC(e);
+
+    switch (e->kind) {
+    case Attribute_kind:
+        loc = update_start_location_to_match_attr(c, loc, e);
+        ADDOP_I(c, loc, SWAP, 2);
+        ADDOP_NAME(c, loc, STORE_ATTR, e->v.Attribute.attr, names);
+        break;
+    case Subscript_kind:
+        if (should_apply_two_element_slice_optimization(e->v.Subscript.slice)) {
+            ADDOP_I(c, loc, SWAP, 4);
+            ADDOP_I(c, loc, SWAP, 3);
+            ADDOP_I(c, loc, SWAP, 2);
+            ADDOP(c, loc, STORE_SLICE);
+        }
+        else {
+            ADDOP_I(c, loc, SWAP, 3);
+            ADDOP_I(c, loc, SWAP, 2);
+            ADDOP(c, loc, STORE_SUBSCR);
+        }
+        break;
+    case Name_kind:
+        RETURN_IF_ERROR(codegen_nameop(c, loc, e->v.Name.id, Store));
+        break;
     default:
         Py_UNREACHABLE();
     }

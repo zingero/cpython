@@ -70,6 +70,9 @@ exec_tests = [
     "v ^= 1",
     "v &= 1",
     "v //= 1",
+    # IncDec
+    "v++",
+    "v--",
     # For
     "for v in v:pass",
     # For-Else
@@ -318,6 +321,7 @@ eval_tests = [
   "a != b",
   "a is b",
   "a is not b",
+  "a isnt b",
   "a in b",
   "a not in b",
   # Call without argument
