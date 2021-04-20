@@ -2084,7 +2084,7 @@ _PyPegen_augoperator(Parser *p, operator_ty kind)
 IncDecOperator *
 _PyPegen_incdecoperator(Parser *p, operator_ty kind)
 {
-    IncDecOperator *a = PyArena_Malloc(p->arena, sizeof(IncDecOperator));
+    IncDecOperator *a = _PyArena_Malloc(p->arena, sizeof(IncDecOperator));
     if (!a) {
         return NULL;
     }

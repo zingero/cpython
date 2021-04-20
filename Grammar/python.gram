@@ -105,7 +105,7 @@ assignment[stmt_ty]:
     | a=single_target b=augassign ~ c=(yield_expr | star_expressions) {
          _PyAST_AugAssign(a, b->kind, c, EXTRA) }
     | a=single_target b=increment_or_decrement {
-         _Py_IncDecAssign(a, b->kind, EXTRA) }
+         _PyAST_IncDecAssign(a, b->kind, EXTRA) }
     | invalid_assignment
 
 augassign[AugOperator*]:
@@ -123,7 +123,7 @@ augassign[AugOperator*]:
     | '**=' { _PyPegen_augoperator(p, Pow) }
     | '//=' { _PyPegen_augoperator(p, FloorDiv) }
 
-incrementation_or_decrementation[AugOperator*]:
+increment_or_decrement[AugOperator*]:
     | '++' { _PyPegen_augoperator(p, Add) }
     | '--' { _PyPegen_augoperator(p, Sub) }
 

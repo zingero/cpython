@@ -86,7 +86,7 @@ static char *soft_keywords[] = {
 #define compound_stmt_type 1011
 #define assignment_type 1012
 #define augassign_type 1013
-#define incrementation_or_decrementation_type 1014
+#define increment_or_decrement_type 1014
 #define global_stmt_type 1015
 #define nonlocal_stmt_type 1016
 #define yield_stmt_type 1017
@@ -484,7 +484,7 @@ static stmt_ty simple_stmt_rule(Parser *p);
 static stmt_ty compound_stmt_rule(Parser *p);
 static stmt_ty assignment_rule(Parser *p);
 static AugOperator* augassign_rule(Parser *p);
-static AugOperator* incrementation_or_decrementation_rule(Parser *p);
+static AugOperator* increment_or_decrement_rule(Parser *p);
 static stmt_ty global_stmt_rule(Parser *p);
 static stmt_ty nonlocal_stmt_rule(Parser *p);
 static stmt_ty yield_stmt_rule(Parser *p);
@@ -2213,7 +2213,7 @@ compound_stmt_rule(Parser *p)
 //     | ('(' single_target ')' | single_subscript_attribute_target) ':' expression ['=' annotated_rhs]
 //     | ((star_targets '='))+ (yield_expr | star_expressions) !'=' TYPE_COMMENT?
 //     | single_target augassign ~ (yield_expr | star_expressions)
-//     | single_target incrementation_or_decrementation
+//     | single_target increment_or_decrement
 //     | invalid_assignment
 static stmt_ty
 assignment_rule(Parser *p)
@@ -2405,21 +2405,21 @@ assignment_rule(Parser *p)
             return NULL;
         }
     }
-    { // single_target incrementation_or_decrementation
+    { // single_target increment_or_decrement
         if (p->error_indicator) {
             D(p->level--);
             return NULL;
         }
-        D(fprintf(stderr, "%*c> assignment[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "single_target incrementation_or_decrementation"));
+        D(fprintf(stderr, "%*c> assignment[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "single_target increment_or_decrement"));
         expr_ty a;
         AugOperator* b;
         if (
             (a = single_target_rule(p))  // single_target
             &&
-            (b = incrementation_or_decrementation_rule(p))  // incrementation_or_decrementation
+            (b = increment_or_decrement_rule(p))  // increment_or_decrement
         )
         {
-            D(fprintf(stderr, "%*c+ assignment[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "single_target incrementation_or_decrementation"));
+            D(fprintf(stderr, "%*c+ assignment[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "single_target increment_or_decrement"));
             Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
             if (_token == NULL) {
                 D(p->level--);
@@ -2429,8 +2429,7 @@ assignment_rule(Parser *p)
             UNUSED(_end_lineno); // Only used by EXTRA macro
             int _end_col_offset = _token->end_col_offset;
             UNUSED(_end_col_offset); // Only used by EXTRA macro
-            expr_ty c = _PyPegen_create_constant( p, _token, "1" );
-            _res = _PyAST_AugAssign ( a , b -> kind , c , EXTRA );
+            _res = _PyAST_IncDecAssign ( a , b -> kind , EXTRA );
             if (_res == NULL && PyErr_Occurred()) {
                 p->error_indicator = 1;
                 D(p->level--);
@@ -2440,7 +2439,7 @@ assignment_rule(Parser *p)
         }
         p->mark = _mark;
         D(fprintf(stderr, "%*c%s assignment[%d-%d]: %s failed!\n", p->level, ' ',
-                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "single_target incrementation_or_decrementation"));
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "single_target increment_or_decrement"));
     }
     if (p->call_invalid_rules) { // invalid_assignment
         if (p->error_indicator) {
@@ -2809,9 +2808,9 @@ augassign_rule(Parser *p)
     return _res;
 }
 
-// incrementation_or_decrementation: '++' | '--'
+// increment_or_decrement: '++' | '--'
 static AugOperator*
-incrementation_or_decrementation_rule(Parser *p)
+increment_or_decrement_rule(Parser *p)
 {
     D(p->level++);
     if (p->error_indicator) {
@@ -2825,13 +2824,13 @@ incrementation_or_decrementation_rule(Parser *p)
             D(p->level--);
             return NULL;
         }
-        D(fprintf(stderr, "%*c> incrementation_or_decrementation[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'++'"));
+        D(fprintf(stderr, "%*c> increment_or_decrement[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'++'"));
         Token * _literal;
         if (
             (_literal = _PyPegen_expect_token(p, 54))  // token='++'
         )
         {
-            D(fprintf(stderr, "%*c+ incrementation_or_decrementation[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'++'"));
+            D(fprintf(stderr, "%*c+ increment_or_decrement[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'++'"));
             _res = _PyPegen_augoperator ( p , Add );
             if (_res == NULL && PyErr_Occurred()) {
                 p->error_indicator = 1;
@@ -2841,7 +2840,7 @@ incrementation_or_decrementation_rule(Parser *p)
             goto done;
         }
         p->mark = _mark;
-        D(fprintf(stderr, "%*c%s incrementation_or_decrementation[%d-%d]: %s failed!\n", p->level, ' ',
+        D(fprintf(stderr, "%*c%s increment_or_decrement[%d-%d]: %s failed!\n", p->level, ' ',
                   p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'++'"));
     }
     { // '--'
@@ -2849,13 +2848,13 @@ incrementation_or_decrementation_rule(Parser *p)
             D(p->level--);
             return NULL;
         }
-        D(fprintf(stderr, "%*c> incrementation_or_decrementation[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'--'"));
+        D(fprintf(stderr, "%*c> increment_or_decrement[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'--'"));
         Token * _literal;
         if (
             (_literal = _PyPegen_expect_token(p, 55))  // token='--'
         )
         {
-            D(fprintf(stderr, "%*c+ incrementation_or_decrementation[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'--'"));
+            D(fprintf(stderr, "%*c+ increment_or_decrement[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'--'"));
             _res = _PyPegen_augoperator ( p , Sub );
             if (_res == NULL && PyErr_Occurred()) {
                 p->error_indicator = 1;
@@ -2865,7 +2864,7 @@ incrementation_or_decrementation_rule(Parser *p)
             goto done;
         }
         p->mark = _mark;
-        D(fprintf(stderr, "%*c%s incrementation_or_decrementation[%d-%d]: %s failed!\n", p->level, ' ',
+        D(fprintf(stderr, "%*c%s increment_or_decrement[%d-%d]: %s failed!\n", p->level, ' ',
                   p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'--'"));
     }
     _res = NULL;
