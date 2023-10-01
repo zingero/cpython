@@ -17,7 +17,7 @@ for parsing and creating XML data.
    This module will use a fast implementation whenever available.
 
 .. deprecated:: 3.3
-   The :mod:`xml.etree.cElementTree` module is deprecated.
+   The :mod:`!xml.etree.cElementTree` module is deprecated.
 
 
 .. warning::
@@ -361,13 +361,6 @@ These two approaches both output::
      |--> Sir Robin
      |--> Gunther
      |--> Commander Clement
-
-
-Additional resources
-^^^^^^^^^^^^^^^^^^^^
-
-See http://effbot.org/zone/element-index.htm for tutorials and links to other
-docs.
 
 
 .. _elementtree-xpath:
@@ -832,7 +825,10 @@ Reference
 Functions
 ^^^^^^^^^
 
+.. module:: xml.etree.ElementInclude
+
 .. function:: xml.etree.ElementInclude.default_loader( href, parse, encoding=None)
+   :module:
 
    Default loader. This default loader reads an included resource from disk.  *href* is a URL.
    *parse* is for parse mode either "xml" or "text".  *encoding*
@@ -844,6 +840,7 @@ Functions
 
 .. function:: xml.etree.ElementInclude.include( elem, loader=None, base_url=None, \
                                                 max_depth=6)
+   :module:
 
    This function expands XInclude directives.  *elem* is the root element.  *loader* is
    an optional resource loader.  If omitted, it defaults to :func:`default_loader`.
@@ -866,6 +863,9 @@ Functions
 
 Element Objects
 ^^^^^^^^^^^^^^^
+
+.. module:: xml.etree.ElementTree
+   :noindex:
 
 .. class:: Element(tag, attrib={}, **extra)
 
@@ -1050,9 +1050,9 @@ Element Objects
    :meth:`~object.__getitem__`, :meth:`~object.__setitem__`,
    :meth:`~object.__len__`.
 
-   Caution: Elements with no subelements will test as ``False``.  This behavior
-   will change in future versions.  Use specific ``len(elem)`` or ``elem is
-   None`` test instead. ::
+   Caution: Elements with no subelements will test as ``False``.  Testing the
+   truth value of an Element is deprecated and will raise an exception in
+   Python 3.14.  Use specific ``len(elem)`` or ``elem is None`` test instead.::
 
      element = root.find('foo')
 
@@ -1061,6 +1061,9 @@ Element Objects
 
      if element is None:
          print("element not found")
+
+   .. versionchanged:: 3.12
+      Testing the truth value of an Element emits :exc:`DeprecationWarning`.
 
    Prior to Python 3.8, the serialisation order of the XML attributes of
    elements was artificially made predictable by sorting the attributes by
@@ -1217,6 +1220,7 @@ Example of changing the attribute "target" of every link in first paragraph::
     [<Element 'a' at 0xb77ec2ac>, <Element 'a' at 0xb77ec1cc>]
     >>> for i in links:             # Iterates through all found links
     ...     i.attrib["target"] = "blank"
+    ...
     >>> tree.write("output.xhtml")
 
 .. _elementtree-qname-objects:

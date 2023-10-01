@@ -5,7 +5,9 @@ import unittest
 
 class DecrementTest(unittest.TestCase):
     def testBasic(self):
-        x = 2
+        x = 3
+        x--
+        self.assertEqual(x, 2)
         x--
         self.assertEqual(x, 1)
         x --
