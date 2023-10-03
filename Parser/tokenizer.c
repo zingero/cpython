@@ -4,10 +4,12 @@
 #include "Python.h"
 #include "pycore_call.h"          // _PyObject_CallNoArgs()
 
-#include <assert.h>
+#include "tokenizer.h"            // struct tok_state
+#include "errcode.h"              // E_OK
 
-#include "tokenizer.h"
-#include "errcode.h"
+#ifdef HAVE_UNISTD_H
+#  include <unistd.h>             // read()
+#endif
 
 /* Alternate tab spacing */
 #define ALTTABSIZE 1
@@ -2549,8 +2551,7 @@ tok_get_normal_mode(struct tok_state *tok, tokenizer_mode* current_tok, struct t
             int current_token3 = _PyToken_ThreeChars(c, c2, c3);
             if (current_token3 != OP) {
                 current_token = current_token3;
-            }
-            else {
+            } else {
                 tok_backup(tok, c3);
             }
             p_start = tok->start;
