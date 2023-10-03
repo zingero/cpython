@@ -21,7 +21,7 @@ class DecrementTest(unittest.TestCase):
             x--
             self.assertEqual(x, original_x - i)
 
-    def test_backward_compatibility_for_plusplus_token(self):
+    def test_backward_compatibility_for_minusminus_token(self):
         self.assertEqual(1--1, 2)
         self.assertEqual(1-- 1, 2)
         x = 2

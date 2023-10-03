@@ -1193,7 +1193,7 @@ class TestMisc(TestCase):
     def test___all__(self):
         expected = token.__all__ + [
             "TokenInfo", "TokenError", "generate_tokens",
-            "detect_encoding", "untokenize", "open", "tokenize",
+            "detect_encoding", "untokenize", "open", "tokenize", "isLastTokenVariable"
         ]
         self.assertCountEqual(tokenize.__all__, expected)
 
@@ -1585,6 +1585,7 @@ class TestTokenize(TestCase):
                          tokenize.tok_name[token.ENDMARKER])
 
     def test_exact_type(self):
+        import tokenize as tokenize_module
         self.assertExactTypeEqual('()', token.LPAR, token.RPAR)
         self.assertExactTypeEqual('[]', token.LSQB, token.RSQB)
         self.assertExactTypeEqual(':', token.COLON)
