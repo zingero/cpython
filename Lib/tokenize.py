@@ -39,11 +39,9 @@ import _tokenize
 cookie_re = re.compile(r'^[ \t\f]*#.*?coding[:=][ \t]*([-\w.]+)', re.ASCII)
 blank_re = re.compile(br'^[ \t\f]*(?:[#\r\n]|$)', re.ASCII)
 
-isLastTokenVariable = False
-
 import token
 __all__ = token.__all__ + ["tokenize", "generate_tokens", "detect_encoding",
-                           "untokenize", "TokenInfo", "open", "TokenError", "isLastTokenVariable"]
+                           "untokenize", "TokenInfo", "open", "TokenError"]
 del token
 
 class TokenInfo(collections.namedtuple('TokenInfo', 'type string start end line')):
@@ -300,7 +298,7 @@ def untokenize(iterable):
 
 
 def _get_normal_name(orig_enc):
-    """Imitates get_normal_name in tokenizer.c."""
+    """Imitates get_normal_name in Parser/tokenizer/helpers.c."""
     # Only care about the first 12 characters.
     enc = orig_enc[:12].lower().replace("_", "-")
     if enc == "utf-8" or enc.startswith("utf-8-"):

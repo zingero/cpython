@@ -8,7 +8,7 @@ class DecrementTest(unittest.TestCase):
         x = 3
         x--
         self.assertEqual(x, 2)
-        x--
+        x-- 
         self.assertEqual(x, 1)
         x --
         self.assertEqual(x, 0)

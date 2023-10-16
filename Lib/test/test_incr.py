@@ -10,7 +10,7 @@ class IncrementTest(unittest.TestCase):
         self.assertEqual(x, 3)
         x ++
         self.assertEqual(x, 4)
-        x++
+        x++ 
         self.assertEqual(x, 5)
 
     def test_in_loop(self):
