@@ -5761,7 +5761,7 @@ codegen_incdecassign(compiler *c, stmt_ty s)
             VISIT(c, expr, e->v.Subscript.slice);
             ADDOP_I(c, loc, COPY, 2);
             ADDOP_I(c, loc, COPY, 2);
-            ADDOP(c, loc, BINARY_SUBSCR);
+            ADDOP(c, loc, BINARY_OP, BINARY_SUBSCR);
         }
         break;
     case Name_kind:

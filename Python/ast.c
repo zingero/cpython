@@ -763,7 +763,7 @@ validate_stmt(stmt_ty stmt)
             validate_expr(stmt->v.AugAssign.value, Load);
         break;
     case IncDecAssign_kind:
-        ret = validate_expr(state, stmt->v.IncDecAssign.target, Store);
+        ret = validate_expr(stmt->v.IncDecAssign.target, Store);
         break;
     case AnnAssign_kind:
         if (stmt->v.AnnAssign.target->kind != Name_kind &&

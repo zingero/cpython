@@ -102,3 +102,7 @@
      - ``":="``
    * - .. data:: EXCLAMATION
      - ``"!"``
+   * - .. data:: PLUSPLUS
+     - ``"++"``
+   * - .. data:: MINUSMINUS
+     - ``"--"``

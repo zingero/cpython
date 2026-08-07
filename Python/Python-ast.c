@@ -61,6 +61,8 @@ void _PyAST_Fini(PyInterpreterState *interp)
     Py_CLEAR(state->Compare_type);
     Py_CLEAR(state->Constant_type);
     Py_CLEAR(state->Continue_type);
+    Py_CLEAR(state->Dec_singleton);
+    Py_CLEAR(state->Dec_type);
     Py_CLEAR(state->Del_singleton);
     Py_CLEAR(state->Del_type);
     Py_CLEAR(state->Delete_type);
@@ -91,6 +93,9 @@ void _PyAST_Fini(PyInterpreterState *interp)
     Py_CLEAR(state->Import_type);
     Py_CLEAR(state->In_singleton);
     Py_CLEAR(state->In_type);
+    Py_CLEAR(state->IncDecAssign_type);
+    Py_CLEAR(state->Inc_singleton);
+    Py_CLEAR(state->Inc_type);
     Py_CLEAR(state->Interactive_type);
     Py_CLEAR(state->Interpolation_type);
     Py_CLEAR(state->Invert_singleton);
@@ -99,6 +104,8 @@ void _PyAST_Fini(PyInterpreterState *interp)
     Py_CLEAR(state->IsNot_type);
     Py_CLEAR(state->Is_singleton);
     Py_CLEAR(state->Is_type);
+    Py_CLEAR(state->Isnt_singleton);
+    Py_CLEAR(state->Isnt_type);
     Py_CLEAR(state->JoinedStr_type);
     Py_CLEAR(state->LShift_singleton);
     Py_CLEAR(state->LShift_type);
@@ -222,6 +229,7 @@ void _PyAST_Fini(PyInterpreterState *interp)
     Py_CLEAR(state->handlers);
     Py_CLEAR(state->id);
     Py_CLEAR(state->ifs);
+    Py_CLEAR(state->inc_dec_operator_type);
     Py_CLEAR(state->is_async);
     Py_CLEAR(state->is_lazy);
     Py_CLEAR(state->items);
@@ -459,6 +467,10 @@ static const char * const TypeAlias_fields[]={
     "type_params",
     "value",
 };
+static const char * const IncDecAssign_fields[]={
+    "target",
+    "op",
+};
 static const char * const AugAssign_fields[]={
     "target",
     "op",
@@ -677,6 +689,8 @@ static const char * const Slice_fields[]={
 };
 static PyObject* ast2obj_expr_context(struct ast_state *state, expr_context_ty);
 static PyObject* ast2obj_boolop(struct ast_state *state, boolop_ty);
+static PyObject* ast2obj_inc_dec_operator(struct ast_state *state,
+                                          inc_dec_operator_ty);
 static PyObject* ast2obj_operator(struct ast_state *state, operator_ty);
 static PyObject* ast2obj_unaryop(struct ast_state *state, unaryop_ty);
 static PyObject* ast2obj_cmpop(struct ast_state *state, cmpop_ty);
@@ -1467,6 +1481,42 @@ add_ast_annotations(struct ast_state *state)
         return 0;
     }
     Py_DECREF(TypeAlias_annotations);
+    PyObject *IncDecAssign_annotations = PyDict_New();
+    if (!IncDecAssign_annotations) return 0;
+    {
+        PyObject *type = state->expr_type;
+        Py_INCREF(type);
+        cond = PyDict_SetItemString(IncDecAssign_annotations, "target", type)
+                                    == 0;
+        Py_DECREF(type);
+        if (!cond) {
+            Py_DECREF(IncDecAssign_annotations);
+            return 0;
+        }
+    }
+    {
+        PyObject *type = state->inc_dec_operator_type;
+        Py_INCREF(type);
+        cond = PyDict_SetItemString(IncDecAssign_annotations, "op", type) == 0;
+        Py_DECREF(type);
+        if (!cond) {
+            Py_DECREF(IncDecAssign_annotations);
+            return 0;
+        }
+    }
+    cond = PyObject_SetAttrString(state->IncDecAssign_type, "_field_types",
+                                  IncDecAssign_annotations) == 0;
+    if (!cond) {
+        Py_DECREF(IncDecAssign_annotations);
+        return 0;
+    }
+    cond = PyObject_SetAttrString(state->IncDecAssign_type, "__annotations__",
+                                  IncDecAssign_annotations) == 0;
+    if (!cond) {
+        Py_DECREF(IncDecAssign_annotations);
+        return 0;
+    }
+    Py_DECREF(IncDecAssign_annotations);
     PyObject *AugAssign_annotations = PyDict_New();
     if (!AugAssign_annotations) return 0;
     {
@@ -3768,6 +3818,36 @@ add_ast_annotations(struct ast_state *state)
         return 0;
     }
     Py_DECREF(Or_annotations);
+    PyObject *Inc_annotations = PyDict_New();
+    if (!Inc_annotations) return 0;
+    cond = PyObject_SetAttrString(state->Inc_type, "_field_types",
+                                  Inc_annotations) == 0;
+    if (!cond) {
+        Py_DECREF(Inc_annotations);
+        return 0;
+    }
+    cond = PyObject_SetAttrString(state->Inc_type, "__annotations__",
+                                  Inc_annotations) == 0;
+    if (!cond) {
+        Py_DECREF(Inc_annotations);
+        return 0;
+    }
+    Py_DECREF(Inc_annotations);
+    PyObject *Dec_annotations = PyDict_New();
+    if (!Dec_annotations) return 0;
+    cond = PyObject_SetAttrString(state->Dec_type, "_field_types",
+                                  Dec_annotations) == 0;
+    if (!cond) {
+        Py_DECREF(Dec_annotations);
+        return 0;
+    }
+    cond = PyObject_SetAttrString(state->Dec_type, "__annotations__",
+                                  Dec_annotations) == 0;
+    if (!cond) {
+        Py_DECREF(Dec_annotations);
+        return 0;
+    }
+    Py_DECREF(Dec_annotations);
     PyObject *Add_annotations = PyDict_New();
     if (!Add_annotations) return 0;
     cond = PyObject_SetAttrString(state->Add_type, "_field_types",
@@ -4173,6 +4253,21 @@ add_ast_annotations(struct ast_state *state)
         return 0;
     }
     Py_DECREF(NotIn_annotations);
+    PyObject *Isnt_annotations = PyDict_New();
+    if (!Isnt_annotations) return 0;
+    cond = PyObject_SetAttrString(state->Isnt_type, "_field_types",
+                                  Isnt_annotations) == 0;
+    if (!cond) {
+        Py_DECREF(Isnt_annotations);
+        return 0;
+    }
+    cond = PyObject_SetAttrString(state->Isnt_type, "__annotations__",
+                                  Isnt_annotations) == 0;
+    if (!cond) {
+        Py_DECREF(Isnt_annotations);
+        return 0;
+    }
+    Py_DECREF(Isnt_annotations);
     PyObject *comprehension_annotations = PyDict_New();
     if (!comprehension_annotations) return 0;
     {
@@ -6160,6 +6255,7 @@ init_types(void *arg)
         "     | Delete(expr* targets)\n"
         "     | Assign(expr* targets, expr value, string? type_comment)\n"
         "     | TypeAlias(expr name, type_param* type_params, expr value)\n"
+        "     | IncDecAssign(expr target, inc_dec_operator op)\n"
         "     | AugAssign(expr target, operator op, expr value)\n"
         "     | AnnAssign(expr target, expr annotation, expr? value, int simple)\n"
         "     | For(expr target, expr iter, stmt* body, stmt* orelse, string? type_comment)\n"
@@ -6236,6 +6332,11 @@ init_types(void *arg)
                                       TypeAlias_fields, 3,
         "TypeAlias(expr name, type_param* type_params, expr value)");
     if (!state->TypeAlias_type) return -1;
+    state->IncDecAssign_type = make_type(state, "IncDecAssign",
+                                         state->stmt_type, IncDecAssign_fields,
+                                         2,
+        "IncDecAssign(expr target, inc_dec_operator op)");
+    if (!state->IncDecAssign_type) return -1;
     state->AugAssign_type = make_type(state, "AugAssign", state->stmt_type,
                                       AugAssign_fields, 3,
         "AugAssign(expr target, operator op, expr value)");
@@ -6560,6 +6661,28 @@ init_types(void *arg)
     state->Or_singleton = PyType_GenericNew((PyTypeObject *)state->Or_type,
                                             NULL, NULL);
     if (!state->Or_singleton) return -1;
+    state->inc_dec_operator_type = make_type(state, "inc_dec_operator",
+                                             state->AST_type, NULL, 0,
+        "inc_dec_operator = Inc | Dec");
+    if (!state->inc_dec_operator_type) return -1;
+    if (add_attributes(state, state->inc_dec_operator_type, NULL, 0) < 0)
+        return -1;
+    if (PySet_Add(state->abstract_types, state->inc_dec_operator_type) < 0)
+        return -1;
+    state->Inc_type = make_type(state, "Inc", state->inc_dec_operator_type,
+                                NULL, 0,
+        "Inc");
+    if (!state->Inc_type) return -1;
+    state->Inc_singleton = PyType_GenericNew((PyTypeObject *)state->Inc_type,
+                                             NULL, NULL);
+    if (!state->Inc_singleton) return -1;
+    state->Dec_type = make_type(state, "Dec", state->inc_dec_operator_type,
+                                NULL, 0,
+        "Dec");
+    if (!state->Dec_type) return -1;
+    state->Dec_singleton = PyType_GenericNew((PyTypeObject *)state->Dec_type,
+                                             NULL, NULL);
+    if (!state->Dec_singleton) return -1;
     state->operator_type = make_type(state, "operator", state->AST_type, NULL,
                                      0,
         "operator = Add | Sub | Mult | MatMult | Div | Mod | Pow | LShift | RShift | BitOr | BitXor | BitAnd | FloorDiv");
@@ -6688,7 +6811,7 @@ init_types(void *arg)
                                               NULL, NULL);
     if (!state->USub_singleton) return -1;
     state->cmpop_type = make_type(state, "cmpop", state->AST_type, NULL, 0,
-        "cmpop = Eq | NotEq | Lt | LtE | Gt | GtE | Is | IsNot | In | NotIn");
+        "cmpop = Eq | NotEq | Lt | LtE | Gt | GtE | Is | IsNot | In | NotIn | Isnt");
     if (!state->cmpop_type) return -1;
     if (add_attributes(state, state->cmpop_type, NULL, 0) < 0) return -1;
     if (PySet_Add(state->abstract_types, state->cmpop_type) < 0) return -1;
@@ -6752,6 +6875,12 @@ init_types(void *arg)
     state->NotIn_singleton = PyType_GenericNew((PyTypeObject
                                                *)state->NotIn_type, NULL, NULL);
     if (!state->NotIn_singleton) return -1;
+    state->Isnt_type = make_type(state, "Isnt", state->cmpop_type, NULL, 0,
+        "Isnt");
+    if (!state->Isnt_type) return -1;
+    state->Isnt_singleton = PyType_GenericNew((PyTypeObject *)state->Isnt_type,
+                                              NULL, NULL);
+    if (!state->Isnt_singleton) return -1;
     state->comprehension_type = make_type(state, "comprehension",
                                           state->AST_type,
                                           comprehension_fields, 4,
@@ -6967,6 +7096,9 @@ static int obj2ast_expr_context(struct ast_state *state, PyObject* obj,
                                 PyArena* arena);
 static int obj2ast_boolop(struct ast_state *state, PyObject* obj, boolop_ty*
                           out, const char* field, PyArena* arena);
+static int obj2ast_inc_dec_operator(struct ast_state *state, PyObject* obj,
+                                    inc_dec_operator_ty* out, const char*
+                                    field, PyArena* arena);
 static int obj2ast_operator(struct ast_state *state, PyObject* obj,
                             operator_ty* out, const char* field, PyArena*
                             arena);
@@ -7248,6 +7380,35 @@ _PyAST_TypeAlias(expr_ty name, asdl_type_param_seq * type_params, expr_ty
     p->v.TypeAlias.name = name;
     p->v.TypeAlias.type_params = type_params;
     p->v.TypeAlias.value = value;
+    p->lineno = lineno;
+    p->col_offset = col_offset;
+    p->end_lineno = end_lineno;
+    p->end_col_offset = end_col_offset;
+    return p;
+}
+
+stmt_ty
+_PyAST_IncDecAssign(expr_ty target, inc_dec_operator_ty op, int lineno, int
+                    col_offset, int end_lineno, int end_col_offset, PyArena
+                    *arena)
+{
+    stmt_ty p;
+    if (!target) {
+        PyErr_SetString(PyExc_ValueError,
+                        "field 'target' is required for IncDecAssign");
+        return NULL;
+    }
+    if (!op) {
+        PyErr_SetString(PyExc_ValueError,
+                        "field 'op' is required for IncDecAssign");
+        return NULL;
+    }
+    p = (stmt_ty)_PyArena_Malloc(arena, sizeof(*p));
+    if (!p)
+        return NULL;
+    p->kind = IncDecAssign_kind;
+    p->v.IncDecAssign.target = target;
+    p->v.IncDecAssign.op = op;
     p->lineno = lineno;
     p->col_offset = col_offset;
     p->end_lineno = end_lineno;
@@ -9145,6 +9306,21 @@ ast2obj_stmt(struct ast_state *state, void* _o)
             goto failed;
         Py_DECREF(value);
         break;
+    case IncDecAssign_kind:
+        tp = (PyTypeObject *)state->IncDecAssign_type;
+        result = PyType_GenericNew(tp, NULL, NULL);
+        if (!result) goto failed;
+        value = ast2obj_expr(state, o->v.IncDecAssign.target);
+        if (!value) goto failed;
+        if (PyObject_SetAttr(result, state->target, value) == -1)
+            goto failed;
+        Py_DECREF(value);
+        value = ast2obj_inc_dec_operator(state, o->v.IncDecAssign.op);
+        if (!value) goto failed;
+        if (PyObject_SetAttr(result, state->op, value) == -1)
+            goto failed;
+        Py_DECREF(value);
+        break;
     case AugAssign_kind:
         tp = (PyTypeObject *)state->AugAssign_type;
         result = PyType_GenericNew(tp, NULL, NULL);
@@ -10095,6 +10271,17 @@ PyObject* ast2obj_boolop(struct ast_state *state, boolop_ty o)
     }
     Py_UNREACHABLE();
 }
+PyObject* ast2obj_inc_dec_operator(struct ast_state *state, inc_dec_operator_ty
+                                   o)
+{
+    switch(o) {
+        case Inc:
+            return Py_NewRef(state->Inc_singleton);
+        case Dec:
+            return Py_NewRef(state->Dec_singleton);
+    }
+    Py_UNREACHABLE();
+}
 PyObject* ast2obj_operator(struct ast_state *state, operator_ty o)
 {
     switch(o) {
@@ -10164,6 +10351,8 @@ PyObject* ast2obj_cmpop(struct ast_state *state, cmpop_ty o)
             return Py_NewRef(state->In_singleton);
         case NotIn:
             return Py_NewRef(state->NotIn_singleton);
+        case Isnt:
+            return Py_NewRef(state->Isnt_singleton);
     }
     Py_UNREACHABLE();
 }
@@ -12112,6 +12301,54 @@ obj2ast_stmt(struct ast_state *state, PyObject* obj, stmt_ty* out, const char*
         }
         *out = _PyAST_TypeAlias(name, type_params, value, lineno, col_offset,
                                 end_lineno, end_col_offset, arena);
+        if (*out == NULL) goto failed;
+        return 0;
+    }
+    tp = state->IncDecAssign_type;
+    isinstance = PyObject_IsInstance(obj, tp);
+    if (isinstance == -1) {
+        return -1;
+    }
+    if (isinstance) {
+        expr_ty target;
+        inc_dec_operator_ty op;
+
+        if (PyObject_GetOptionalAttr(obj, state->target, &tmp) < 0) {
+            return -1;
+        }
+        if (tmp == NULL) {
+            PyErr_SetString(PyExc_TypeError, "required field \"target\" missing from IncDecAssign");
+            return -1;
+        }
+        else {
+            int res;
+            if (_Py_EnterRecursiveCall(" while traversing 'IncDecAssign' node")) {
+                goto failed;
+            }
+            res = obj2ast_expr(state, tmp, &target, "target", arena);
+            _Py_LeaveRecursiveCall();
+            if (res != 0) goto failed;
+            Py_CLEAR(tmp);
+        }
+        if (PyObject_GetOptionalAttr(obj, state->op, &tmp) < 0) {
+            return -1;
+        }
+        if (tmp == NULL) {
+            PyErr_SetString(PyExc_TypeError, "required field \"op\" missing from IncDecAssign");
+            return -1;
+        }
+        else {
+            int res;
+            if (_Py_EnterRecursiveCall(" while traversing 'IncDecAssign' node")) {
+                goto failed;
+            }
+            res = obj2ast_inc_dec_operator(state, tmp, &op, "op", arena);
+            _Py_LeaveRecursiveCall();
+            if (res != 0) goto failed;
+            Py_CLEAR(tmp);
+        }
+        *out = _PyAST_IncDecAssign(target, op, lineno, col_offset, end_lineno,
+                                   end_col_offset, arena);
         if (*out == NULL) goto failed;
         return 0;
     }
@@ -15824,6 +16061,34 @@ obj2ast_boolop(struct ast_state *state, PyObject* obj, boolop_ty* out, const
 }
 
 int
+obj2ast_inc_dec_operator(struct ast_state *state, PyObject* obj,
+                         inc_dec_operator_ty* out, const char* field, PyArena*
+                         arena)
+{
+    int isinstance;
+
+    isinstance = PyObject_IsInstance(obj, state->Inc_type);
+    if (isinstance == -1) {
+        return -1;
+    }
+    if (isinstance) {
+        *out = Inc;
+        return 0;
+    }
+    isinstance = PyObject_IsInstance(obj, state->Dec_type);
+    if (isinstance == -1) {
+        return -1;
+    }
+    if (isinstance) {
+        *out = Dec;
+        return 0;
+    }
+
+    PyErr_Format(PyExc_TypeError, "expected some sort of inc_dec_operator, but got %R", obj);
+    return -1;
+}
+
+int
 obj2ast_operator(struct ast_state *state, PyObject* obj, operator_ty* out,
                  const char* field, PyArena* arena)
 {
@@ -16065,6 +16330,14 @@ obj2ast_cmpop(struct ast_state *state, PyObject* obj, cmpop_ty* out, const
     }
     if (isinstance) {
         *out = NotIn;
+        return 0;
+    }
+    isinstance = PyObject_IsInstance(obj, state->Isnt_type);
+    if (isinstance == -1) {
+        return -1;
+    }
+    if (isinstance) {
+        *out = Isnt;
         return 0;
     }
 
@@ -18164,6 +18437,10 @@ astmodule_exec(PyObject *m)
     if (PyModule_AddObjectRef(m, "TypeAlias", state->TypeAlias_type) < 0) {
         return -1;
     }
+    if (PyModule_AddObjectRef(m, "IncDecAssign", state->IncDecAssign_type) < 0)
+        {
+        return -1;
+    }
     if (PyModule_AddObjectRef(m, "AugAssign", state->AugAssign_type) < 0) {
         return -1;
     }
@@ -18342,6 +18619,16 @@ astmodule_exec(PyObject *m)
     if (PyModule_AddObjectRef(m, "Or", state->Or_type) < 0) {
         return -1;
     }
+    if (PyModule_AddObjectRef(m, "inc_dec_operator",
+        state->inc_dec_operator_type) < 0) {
+        return -1;
+    }
+    if (PyModule_AddObjectRef(m, "Inc", state->Inc_type) < 0) {
+        return -1;
+    }
+    if (PyModule_AddObjectRef(m, "Dec", state->Dec_type) < 0) {
+        return -1;
+    }
     if (PyModule_AddObjectRef(m, "operator", state->operator_type) < 0) {
         return -1;
     }
@@ -18430,6 +18717,9 @@ astmodule_exec(PyObject *m)
         return -1;
     }
     if (PyModule_AddObjectRef(m, "NotIn", state->NotIn_type) < 0) {
+        return -1;
+    }
+    if (PyModule_AddObjectRef(m, "Isnt", state->Isnt_type) < 0) {
         return -1;
     }
     if (PyModule_AddObjectRef(m, "comprehension", state->comprehension_type) <

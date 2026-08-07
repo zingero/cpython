@@ -3087,8 +3087,7 @@ KeyError_str(PyObject *op)
     */
     PyBaseExceptionObject *self = PyBaseExceptionObject_CAST(op);
     if (PyTuple_GET_SIZE(self->args) == 1) {
-        PyObject *str = PyUnicode_FromFormat("Missing key: %R", PyTuple_GET_ITEM(self->args, 0));
-        return PyObject_Str(str);
+        return PyUnicode_FromFormat("Missing key: %R", PyTuple_GET_ITEM(self->args, 0));
     }
     return BaseException_str(op);
 }

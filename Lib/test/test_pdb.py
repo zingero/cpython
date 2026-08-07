@@ -1246,7 +1246,7 @@ def test_convenience_variables():
     > <doctest test.test_pdb.test_convenience_variables[0]>(4)util_function()
     -> raise Exception('test')
     (Pdb) $a
-    *** KeyError: 'a'
+    *** KeyError: Missing key: 'a'
     (Pdb) next
     Exception: test
     > <doctest test.test_pdb.test_convenience_variables[0]>(4)util_function()
@@ -1257,7 +1257,7 @@ def test_convenience_variables():
     > <doctest test.test_pdb.test_convenience_variables[0]>(5)util_function()
     -> except Exception:
     (Pdb) $_exception
-    *** KeyError: '_exception'
+    *** KeyError: Missing key: '_exception'
     (Pdb) return
     --Return--
     > <doctest test.test_pdb.test_convenience_variables[0]>(7)util_function()->1

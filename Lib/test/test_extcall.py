@@ -638,7 +638,7 @@ def test_errors_in_keys():
     >>> f(**D())
     Traceback (most recent call last):
       ...
-    KeyError: 'some error'
+    KeyError: Missing key: 'some error'
     """
 
 def test_errors_in_keys_next():
@@ -670,7 +670,7 @@ def test_errors_in_keys_next():
     >>> f(**D())
     Traceback (most recent call last):
       ...
-    KeyError: 'some error'
+    KeyError: Missing key: 'some error'
     """
 
 def test_errors_in_getitem():
@@ -698,7 +698,7 @@ def test_errors_in_getitem():
     >>> f(**D())
     Traceback (most recent call last):
       ...
-    KeyError: 'some error'
+    KeyError: Missing key: 'some error'
     """
 
 import doctest

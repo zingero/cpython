@@ -2097,7 +2097,7 @@ symtable_visit_stmt(struct symtable *st, stmt_ty s)
         VISIT(st, expr, s->v.AugAssign.value);
         break;
     }
-    case IncDecAssign_kind {
+    case IncDecAssign_kind: {
         VISIT(st, expr, s->v.IncDecAssign.target);
         break;
     }

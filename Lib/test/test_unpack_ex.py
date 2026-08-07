@@ -699,7 +699,7 @@ def test_errors_in_keys():
     >>> {**D()}
     Traceback (most recent call last):
       ...
-    KeyError: 'some error'
+    KeyError: Missing key: 'some error'
     """
 
 def test_errors_in_keys_next():
@@ -730,7 +730,7 @@ def test_errors_in_keys_next():
     >>> {**D()}
     Traceback (most recent call last):
       ...
-    KeyError: 'some error'
+    KeyError: Missing key: 'some error'
     """
 
 def test_errors_in_getitem():
@@ -757,7 +757,7 @@ def test_errors_in_getitem():
     >>> {**D()}
     Traceback (most recent call last):
       ...
-    KeyError: 'some error'
+    KeyError: Missing key: 'some error'
     """
 
 __test__ = {'doctests' : doctests}
